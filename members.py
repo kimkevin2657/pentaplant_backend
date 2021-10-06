@@ -16,6 +16,9 @@ class members:
 
 
     def update(self, buyprice, sellprice):
+        print()
+        print(" update method executed ")
+        print()
 
         self.dbcur.execute("SELECT userid FROM users WHERE botactive = True")
         userlist = self.dbcur.fetchall()

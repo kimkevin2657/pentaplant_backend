@@ -32,7 +32,7 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
-        buyprice = 49000.0
+        buyprice = 45000.0
 
         # updates the target prices if necessary
         result = membersobj.update(buyprice, sellprice)
