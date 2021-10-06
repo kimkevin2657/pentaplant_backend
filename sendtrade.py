@@ -3,16 +3,30 @@ import random
 import numpy as np
 import asyncio 
 import time
-from datetime import datetime as dt
-from datetime import date, timedelta
 import json
 import requests
 import psycopg2
+
+from time import gmtime, strftime
+import datetime
+import pytz
 
 class sendtrade:
     def __init__(self, dbcur, dbconn):
         self.dbcur = dbcur
         self.dbconn = dbconn
+
+
+    # finds the current time in Asia/Seoul in format YYYY-MM-DD hh:mm:ss
+    def currenttime(self):
+        tz1 = pytz.timezone("UTC")
+        tz2 = pytz.timezone("Asia/Seoul")
+        dt = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        dt = datetime.datetime.strptime(dt,"%Y-%m-%d %H:%M:%S")
+        dt = tz1.localize(dt)
+        dt = dt.astimezone(tz2)
+        dt = dt.strftime("%Y-%m-%d %H:%M:%S")
+        return dt
 
 
     def buytrade(self, currentprice, mode="deploy"):
@@ -46,6 +60,16 @@ class sendtrade:
 
                                 # insert into transaction database
                                 # transaction code
+                                # id, userid, side, amount (in target coins) , currency, entryprice, commission, entrytime, baseamount (in base currency) 
+                                amount = 0.01
+                                currency = "BTC/USDT"
+                                entryprice = currentprice
+                                commission = 0.25
+                                entrytime = self.currenttime()
+                                # baseamount should be based on what's actually filled as well
+                                baseamount = currlist[k]["entryamount"]
+                                tupleval = (userlist[i][0], "buy", amount, currency, entryprice, commission, entrytime, baseamount)
+                                self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
 
                     if j == 0:
                         self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
@@ -84,13 +108,23 @@ class sendtrade:
                         if currlist[k]["entered"] == True:
                             if currentprice/currlist[k]["entryprice"] - 1.0 > float(botsettings[j]["percentreturn"])/100.0:
                                 currlist[k]["entryprice"] = currentprice
-                                currlist[k]["entered"] = True
+                                currlist[k]["entered"] = False
                                 
                                 # execute trade with the amount currlist[k]["entryamount"]
                                 # trade code
 
                                 # insert into transaction database
                                 # transaction code
+                                # id, userid, side, amount (in target coins) , currency, entryprice, commission, entrytime, baseamount (in base currency) 
+                                amount = 0.01
+                                currency = "BTC/USDT"
+                                entryprice = currentprice
+                                commission = 0.25
+                                entrytime = self.currenttime()
+                                baseamount = currlist[k]["entryamount"]
+                                tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount)
+                                self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+
 
                     if j == 0:
                         self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
