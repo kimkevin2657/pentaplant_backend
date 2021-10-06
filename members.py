@@ -15,7 +15,7 @@ class members:
         self.dbconn = dbconn
 
 
-    def update(self, currentprice):
+    def update(self, buyprice, sellprice):
 
         self.dbcur.execute("SELECT userid FROM users WHERE botactive = True")
         userlist = self.dbcur.fetchall()
@@ -27,6 +27,9 @@ class members:
 
             # skips over the user whose first bot range is deactivated
             if botsettings[0]["active"] == False:
+                print()
+                print(" update method skipped user ", userlist[i][0], " due to all bots inactive")
+                print()
                 continue
             else:
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
@@ -35,11 +38,14 @@ class members:
                 # botinfo[0] = botoneinfo
                 # botinfo[0][0] = botoneinfo[0]
                 # if the currentprice is less than the highest target price, then skip
-                if botinfo[0]["data"][0]["targetprice"] > currentprice:
+                if botinfo[0]["data"][0]["targetprice"] > buyprice:
+                    print()
+                    print(" update method skipped user ", userlist[i][0], " since the buy price not greater than the current highest price ")
+                    print()
                     continue
                 else:
 
-                    bottomprice = currentprice
+                    bottomprice = buyprice
 
 
                     for j in range(0, len(botsettings)):
@@ -48,7 +54,7 @@ class members:
                         else:
 
                             entryamount = float(botsettings[j]["amount"])*(1.0/float(botsettings[j]["entrynum"]))
-                            dollar_difference = float(currentprice)*(float(botsettings[j]["percentrange"])/100.0)*(1.0/float(botsettings[j]["entrynum"]))
+                            dollar_difference = float(buyprice)*(float(botsettings[j]["percentrange"])/100.0)*(1.0/float(botsettings[j]["entrynum"]))
                             
                             
                             templist = []

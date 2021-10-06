@@ -29,7 +29,7 @@ class sendtrade:
         return dt
 
 
-    def buytrade(self, currentprice, mode="deploy"):
+    def buytrade(self, buyprice, sellprice, mode="deploy"):
 
         self.dbcur.execute("SELECT userid FROM users WHERE botactive = True")
         userlist = self.dbcur.fetchall()
@@ -41,6 +41,9 @@ class sendtrade:
 
 
             if botsettings[0]["active"] == False:
+                print()
+                print(" skipped user ", userlist[i][0], " due to all bots inactive")
+                print()
                 continue
             else:
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
@@ -51,8 +54,8 @@ class sendtrade:
 
                     for k in range(0, len(currlist)):
                         if currlist[k]["entered"] == False:
-                            if currlist[k]["targetprice"] >= currentprice:
-                                currlist[k]["entryprice"] = currentprice
+                            if currlist[k]["targetprice"] >= buyprice:
+                                currlist[k]["entryprice"] = buyprice
                                 currlist[k]["entered"] = True
 
                                 # execute trade with the amount currlist[k]["entryamount"]
@@ -63,7 +66,7 @@ class sendtrade:
                                 # id, userid, side, amount (in target coins) , currency, entryprice, commission, entrytime, baseamount (in base currency) 
                                 amount = 0.01
                                 currency = "BTC/USDT"
-                                entryprice = currentprice
+                                entryprice = buyprice
                                 commission = 0.25
                                 entrytime = self.currenttime()
                                 # baseamount should be based on what's actually filled as well
@@ -85,7 +88,7 @@ class sendtrade:
 
         return "success"
 
-    def selltrade(self, currentprice, mode="deploy"):
+    def selltrade(self, buyprice, sellprice, mode="deploy"):
 
         self.dbcur.execute("SELECT userid FROM users WHERE botactive = True")
         userlist = self.dbcur.fetchall()
@@ -106,8 +109,8 @@ class sendtrade:
 
                     for k in range(0, len(currlist)):
                         if currlist[k]["entered"] == True:
-                            if currentprice/currlist[k]["entryprice"] - 1.0 > float(botsettings[j]["percentreturn"])/100.0:
-                                currlist[k]["entryprice"] = currentprice
+                            if sellprice/currlist[k]["entryprice"] - 1.0 > float(botsettings[j]["percentreturn"])/100.0:
+                                currlist[k]["entryprice"] = sellprice
                                 currlist[k]["entered"] = False
                                 
                                 # execute trade with the amount currlist[k]["entryamount"]
@@ -118,7 +121,7 @@ class sendtrade:
                                 # id, userid, side, amount (in target coins) , currency, entryprice, commission, entrytime, baseamount (in base currency) 
                                 amount = 0.01
                                 currency = "BTC/USDT"
-                                entryprice = currentprice
+                                entryprice = sellprice
                                 commission = 0.25
                                 entrytime = self.currenttime()
                                 baseamount = currlist[k]["entryamount"]

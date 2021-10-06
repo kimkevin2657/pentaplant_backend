@@ -24,21 +24,26 @@ def autotrade():
     while(True):
 
         # fetches real time bitcoin price from the database
-        dbcur.execute("SELECT currentprice FROM realtime WHERE coin = %s", ("bitcoin",))
-        currentprice = dbcur.fetchall()[0][0]
+        #dbcur.execute("SELECT currentprice FROM realtime WHERE coin = %s", ("bitcoin",))
+        #currentprice = dbcur.fetchall()[0][0]
+        dbcur.execute("SELECT orderbook FROM realtime WHERE (coin, exchange) = (%s, %s)", ("BTC/USDT", "Upbit"))
+        orderbook = dbcur.fetchall()[0][0]
 
-        currentprice = 49900000
+        buyprice = orderbook["askprice"]
+        sellprice = orderbook["bidprice"]
+
+        buyprice = 49000.0
 
         # updates the target prices if necessary
-        result = membersobj.update(currentprice)
+        result = membersobj.update(buyprice, sellprice)
         print(" result   ", result)
 
         # checks whether any one of them is enter and executes order
-        result2 = sendtradeobj.buytrade(currentprice)
+        result2 = sendtradeobj.buytrade(buyprice, sellprice)
         print(" result2  ", result2)
 
         # checks whether any one of them is sellable and executes order
-        result3 = sendtradeobj.selltrade(currentprice)
+        result3 = sendtradeobj.selltrade(buyprice, sellprice)
         print(" result3  ", result3)
 
         time.sleep(5)
