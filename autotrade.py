@@ -32,8 +32,6 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
-        buyprice = 45000.0
-
         # updates the target prices if necessary
         result = membersobj.update(buyprice, sellprice)
         print(" result   ", result)
@@ -45,6 +43,10 @@ def autotrade():
         # checks whether any one of them is sellable and executes order
         result3 = sendtradeobj.selltrade(buyprice, sellprice)
         print(" result3  ", result3)
+
+        # updates the target prices if necessary
+        result4 = membersobj.update(buyprice, sellprice)
+        print(" result4   ", result4)
 
         time.sleep(5)
 

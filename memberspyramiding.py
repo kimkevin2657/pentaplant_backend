@@ -9,7 +9,7 @@ import json
 import requests
 import psycopg2
 
-class members:
+class memberspyramiding:
     def __init__(self, dbcur, dbconn):
         self.dbcur = dbcur
         self.dbconn = dbconn
@@ -26,11 +26,61 @@ class members:
             botsettings = self.dbcur.fetchall()[0]
 
             # skips over the user whose first bot range is deactivated
+            # which means all the bots are disabled
             if botsettings[0]["active"] == False:
                 continue
             else:
+
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfo = self.dbcur.fetchall()[0]
+
+                self.dbcur.execute("SELECT botoneinfopyramiding, bottwoinfopyramiding, botthreeinfopyramiding FROM botsdata WHERE userid = %s", (userlist[i][0],))
+                botinfopyramiding = self.dbcur.fetchall()[0]
+
+                for j in range(0, len(botinfo)):
+
+                    # skips of the bot where pyramiding is not turned on
+                    if botsettings[j]["pyramiding"] == False:
+                        continue
+
+                    # skips over the bot where the bot active is false
+                    if botsettings[j]["active"] == False:
+                        continue
+
+                    # checks whether the given bot is all not entered
+                    tempbool = False
+                    for k in range(0, len(botinfo[j])):
+                        if botinfo[j]["data"][k]["entered"] == True:
+                            tempbool = True
+                        if tempbool:
+                            break
+
+                    # if all ranges in the given bot is not entered
+                    if not tempbool:
+                        
+                        # then updates the pyramiding bot info
+
+                        entrynum = botsettings[j]["entrynumpyramiding"]
+                        precentreturnpyramiding = float(botsettings[j]["precentreturnpyramiding"])
+                        totalentryamount = 0.0
+                        for k in range(0, len(botinfo[j]["data"])):
+                            totalentryamount += float(botinfo[j]["data"][k]["entryamount"])
+
+                        entryamount = totalentryamount*(1.0/float(entrynum))
+
+                        bottomprice = botinfo[j][]
+
+
+                        
+                        templist = []
+                        for k in range(0, entrynum):
+                            bottomprice *= (1.0+precentreturnpyramiding/100.0)
+                            templist.append({"targetprice": bottomprice, "entryprice": buyprice, "entryamount": entryamount, "entered": False})
+
+                        if j == 0:
+                            self.dbcur.execute("UPDATE botsdata SET botoneinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
+                            self.dbconn.commit()
+
                 
                 # botinfo[0] = botoneinfo
                 # botinfo[0][0] = botoneinfo[0]
@@ -48,7 +98,7 @@ class members:
                         ### updated october 7th
                         if botsettings[j]["currpyramiding"] == True:
                             continue
-
+                        
                         if botsettings[j]["active"] == False:
                             continue
                         else:
@@ -61,10 +111,7 @@ class members:
                             for k in range(0, botsettings[j]["entrynum"]):
                                 currtarget = bottomprice - dollar_difference
                                 # should "entryprice" be currtarget vs currentprice?
-                                if k == 0:
-                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False})
-                                else:
-                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False})
+                                templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False})
                                 bottomprice = currtarget
 
 
@@ -100,4 +147,3 @@ class members:
                                 self.dbconn.commit()
 
         return "success"
-

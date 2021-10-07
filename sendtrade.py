@@ -30,9 +30,6 @@ class sendtrade:
 
 
     def buytrade(self, buyprice, sellprice, mode="deploy"):
-        print()
-        print(" buytrade method executed ")
-        print()
 
         self.dbcur.execute("SELECT userid FROM users WHERE botactive = True")
         userlist = self.dbcur.fetchall()
@@ -44,14 +41,10 @@ class sendtrade:
 
 
             if botsettings[0]["active"] == False:
-                print()
-                print(" skipped user ", userlist[i][0], " due to all bots inactive")
-                print()
+
                 continue
             else:
-                print()
-                print(" user not skipped ", userlist[i][0], " due to all bots active")
-                print()
+
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfo = self.dbcur.fetchall()[0]
 
@@ -61,15 +54,9 @@ class sendtrade:
                     for k in range(0, len(currlist)):
                         if currlist[k]["entered"] == False:
                             if currlist[k]["targetprice"] >= buyprice:
-                                print()
-                                print(" userid  ", userlist[i][0], "  trading bot  ", j, "   for ",k,"'th range ", buyprice, "  ", currlist[k]["targetprice"])
-                                print()
+
                                 currlist[k]["entryprice"] = buyprice
                                 currlist[k]["entered"] = True
-                                print()
-                                print(" new currlist for userid ", userlist[i][0], " trading bot " , j , " for ",k,"'th range ")
-                                print(currlist)
-                                print()
 
                                 # execute trade with the amount currlist[k]["entryamount"]
                                 # trade code
@@ -90,26 +77,19 @@ class sendtrade:
 
                     print(" new currlist before updating db  ", currlist)
                     if j == 0:
-                        print()
-                        print(" userid ", userlist[i][0], " tradingbot ", j, " updated")
-                        print()
+
                         self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
                         self.dbconn.commit()
 
                         self.dbcur.execute("SELECT botoneinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                         temp = self.dbcur.fetchall()
-                        print(" ===============   ", temp)
 
                     if j == 1:
-                        print()
-                        print(" userid ", userlist[i][0], " tradingbot ", j, " updated")
-                        print()
+
                         self.dbcur.execute("UPDATE botsdata SET bottwoinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
                         self.dbconn.commit()
                     if j == 2:
-                        print()
-                        print(" userid ", userlist[i][0], " tradingbot ", j, " updated")
-                        print()
+
                         self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
                         self.dbconn.commit()
                     
@@ -117,9 +97,6 @@ class sendtrade:
         return "success"
 
     def selltrade(self, buyprice, sellprice, mode="deploy"):
-        print()
-        print(" selltrade method executed ")
-        print()
 
         self.dbcur.execute("SELECT userid FROM users WHERE botactive = True")
         userlist = self.dbcur.fetchall()
@@ -158,7 +135,7 @@ class sendtrade:
                                 baseamount = currlist[k]["entryamount"]
                                 tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount)
                                 self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
-
+                                self.dbconn.commit()
 
                     if j == 0:
                         self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
