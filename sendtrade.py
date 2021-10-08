@@ -118,7 +118,8 @@ class sendtrade:
                     for k in range(0, len(currlist)):
                         if currlist[k]["entered"] == True:
                             if sellprice/currlist[k]["entryprice"] - 1.0 > float(botsettings[j]["percentreturn"])/100.0:
-                                currlist[k]["entryprice"] = sellprice
+                                #currlist[k]["entryprice"] = sellprice
+                                currlist[k]["entryprice"] = 0
                                 currlist[k]["entered"] = False
                                 
                                 # execute trade with the amount currlist[k]["entryamount"]
