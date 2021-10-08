@@ -26,7 +26,10 @@ for i in range(0, len(temp)):
 
         templist = []
         for j in range(0, temp[i]["entrynum"]):
-            templist.append({"targetprice": 0, "entryprice": 0, "entryamount": 0, "entered": False})
+            if j == 0:
+                templist.append({"targetprice": 0, "entryprice": 0, "entryamount": 0, "entered": False, "baseprice": 0})
+            else:
+                templist.append({"targetprice": 0, "entryprice": 0, "entryamount": 0, "entered": False})
         
         if i == 0:
             cur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))

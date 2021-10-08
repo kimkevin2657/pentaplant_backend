@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from members import members
 from sendtrade import sendtrade
+from memberspyramiding import memberspyramiding
 import requests
 import json
 import psycopg2
@@ -21,6 +22,8 @@ def autotrade():
 
     sendtradeobj = sendtrade(dbcur, dbconn)
 
+    memberspyramidingobj = memberspyramiding(dbcur,dbconn)
+
     while(True):
 
         # fetches real time bitcoin price from the database
@@ -32,8 +35,15 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
+        buyprice = 101000.0
+        sellprice = 100000.0
+
         # updates the target prices if necessary
         result = membersobj.update(buyprice, sellprice)
+        print(" result   ", result)
+
+        #updates the pyramiding if necessary
+        result = memberspyramidingobj.update(buyprice, sellprice)
         print(" result   ", result)
 
         # checks whether any one of them is enter and executes order
@@ -47,6 +57,11 @@ def autotrade():
         # updates the target prices if necessary
         result4 = membersobj.update(buyprice, sellprice)
         print(" result4   ", result4)
+
+        #updates the pyramiding if necessary
+        result = memberspyramidingobj.update(buyprice, sellprice)
+        print(" result   ", result)
+
 
         time.sleep(5)
 

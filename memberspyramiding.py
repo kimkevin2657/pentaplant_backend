@@ -61,89 +61,36 @@ class memberspyramiding:
                         # then updates the pyramiding bot info
 
                         entrynum = botsettings[j]["entrynumpyramiding"]
-                        precentreturnpyramiding = float(botsettings[j]["precentreturnpyramiding"])
+
+                        precentreturnpyramiding = float(botsettings[j]["percentreturnpyramiding"])
                         totalentryamount = 0.0
                         for k in range(0, len(botinfo[j]["data"])):
                             totalentryamount += float(botinfo[j]["data"][k]["entryamount"])
 
+                        
                         entryamount = totalentryamount*(1.0/float(entrynum))
 
-                        bottomprice = botinfo[j][]
-
+                        bottomprice = botinfo[j]["data"][0]["baseprice"]
 
                         
                         templist = []
                         for k in range(0, entrynum):
-                            bottomprice *= (1.0+precentreturnpyramiding/100.0)
-                            templist.append({"targetprice": bottomprice, "entryprice": buyprice, "entryamount": entryamount, "entered": False})
+                            currtarget = bottomprice*(1.0+precentreturnpyramiding/100.0)
+                            if k == 0:
+                                templist.append({"targetprice": currtarget, "entryprice": buyprice, "entryamount": entryamount, "entered": False, "baseprice": bottomprice})
+                            else:
+                                templist.append({"targetprice": currtarget, "entryprice": buyprice, "entryamount": entryamount, "entered": False})
+                            bottomprice = currtarget
 
                         if j == 0:
                             self.dbcur.execute("UPDATE botsdata SET botoneinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
                             self.dbconn.commit()
-
-                
-                # botinfo[0] = botoneinfo
-                # botinfo[0][0] = botoneinfo[0]
-                # if the currentprice is less than the highest target price, then skip
-                if botinfo[0]["data"][0]["targetprice"] > buyprice:
-
-                    continue
-                else:
-
-                    bottomprice = buyprice
-
-                    for j in range(0, len(botsettings)):
-
-                        ### checking to see if the current bot range is in pyramiding or not
-                        ### updated october 7th
-                        if botsettings[j]["currpyramiding"] == True:
-                            continue
-                        
-                        if botsettings[j]["active"] == False:
-                            continue
-                        else:
-
-                            entryamount = float(botsettings[j]["amount"])*(1.0/float(botsettings[j]["entrynum"]))
-                            dollar_difference = float(buyprice)*(float(botsettings[j]["percentrange"])/100.0)*(1.0/float(botsettings[j]["entrynum"]))
-                            
-                            
-                            templist = []
-                            for k in range(0, botsettings[j]["entrynum"]):
-                                currtarget = bottomprice - dollar_difference
-                                # should "entryprice" be currtarget vs currentprice?
-                                templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False})
-                                bottomprice = currtarget
+                        if j == 1:
+                            self.dbcur.execute("UPDATE botsdata SET bottwoinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
+                            self.dbconn.commit()
+                        if j == 2:
+                            self.dbcur.execute("UPDATE botsdata SET botthreeinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
+                            self.dbconn.commit()
 
 
-                            """
-                            if j == 0:
-                                for k in range(0, len(templist)):
-                                    templist[k]["entryprice"] = botinfo[0]["data"][k]["entryprice"]
-                                    templist[k]["entryamount"] = botinfo[0]["data"][k]["entryamount"]
-                                    templist[k]["entered"] = botinfo[0]["data"][k]["entered"]
-
-                            if j == 1:
-                                for k in range(0, len(templist)):
-                                    templist[k]["entryprice"] = botinfo[1]["data"][k]["entryprice"]
-                                    templist[k]["entryamount"] = botinfo[1]["data"][k]["entryamount"]
-                                    templist[k]["entered"] = botinfo[1]["data"][k]["entered"]
-
-                            if j == 2:
-                                for k in range(0, len(templist)):
-                                    templist[k]["entryprice"] = botinfo[2]["data"][k]["entryprice"]
-                                    templist[k]["entryamount"] = botinfo[2]["data"][k]["entryamount"]
-                                    templist[k]["entered"] = botinfo[2]["data"][k]["entered"]s
-                            """
-
-                            if j == 0:
-                                self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
-                                self.dbconn.commit()
-
-                            if j == 1:
-                                self.dbcur.execute("UPDATE botsdata SET bottwoinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
-                                self.dbconn.commit()
-                            if j == 2:
-                                self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
-                                self.dbconn.commit()
-
-        return "success"
+        return "success"    
