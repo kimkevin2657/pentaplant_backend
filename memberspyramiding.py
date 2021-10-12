@@ -39,6 +39,10 @@ class memberspyramiding:
 
                 for j in range(0, len(botinfo)):
 
+                    # skips if the currpyramiding is false
+                    if botsettings[j]["currpyramiding"] == False:
+                        continue
+
                     # skips of the bot where pyramiding is not turned on
                     if botsettings[j]["pyramiding"] == False:
                         continue

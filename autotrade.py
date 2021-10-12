@@ -3,6 +3,7 @@ from flask_cors import CORS
 from members import members
 from sendtrade import sendtrade
 from memberspyramiding import memberspyramiding
+from sendtradepyramiding import sendtradepyramiding
 import requests
 import json
 import psycopg2
@@ -24,6 +25,8 @@ def autotrade():
 
     memberspyramidingobj = memberspyramiding(dbcur,dbconn)
 
+    sendtradepyramidingobj = sendtradepyramiding(dbcur,dbconn)
+
     while(True):
 
         # fetches real time bitcoin price from the database
@@ -41,26 +44,33 @@ def autotrade():
         # updates the target prices if necessary
         result = membersobj.update(buyprice, sellprice)
         print(" result   ", result)
-
         #updates the pyramiding if necessary
         result = memberspyramidingobj.update(buyprice, sellprice)
         print(" result   ", result)
+
 
         # checks whether any one of them is enter and executes order
         result2 = sendtradeobj.buytrade(buyprice, sellprice)
         print(" result2  ", result2)
-
         # checks whether any one of them is sellable and executes order
         result3 = sendtradeobj.selltrade(buyprice, sellprice)
         print(" result3  ", result3)
 
-        # updates the target prices if necessary
-        result4 = membersobj.update(buyprice, sellprice)
-        print(" result4   ", result4)
 
+        # checks whether any one of pyramiding is enter and executes order
+        result4 = sendtradepyramidingobj.buytrade(buyprice, sellprice)
+        print(" result4 ", result4)
+        # cheecks whether any one of pyramiding is sellable and executes order
+        result5 = sendtradepyramidingobj.selltrade(buyprice, sellprice)
+        print(" result5 ", result5)
+
+
+        # updates the target prices if necessary
+        result6 = membersobj.update(buyprice, sellprice)
+        print(" result6   ", result6)
         #updates the pyramiding if necessary
-        result = memberspyramidingobj.update(buyprice, sellprice)
-        print(" result   ", result)
+        result7 = memberspyramidingobj.update(buyprice, sellprice)
+        print(" result   ", result7)
 
 
         time.sleep(5)

@@ -35,7 +35,7 @@ class members:
                 # botinfo[0] = botoneinfo
                 # botinfo[0][0] = botoneinfo[0]
                 # if the currentprice is less than the highest target price, then skip
-                if botinfo[0]["data"][0]["targetprice"] > buyprice:
+                if botinfo[0]["data"][0]["baseprice"] > buyprice:
 
                     continue
                 else:
@@ -67,26 +67,6 @@ class members:
                                     templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False})
                                 bottomprice = currtarget
 
-
-                            """
-                            if j == 0:
-                                for k in range(0, len(templist)):
-                                    templist[k]["entryprice"] = botinfo[0]["data"][k]["entryprice"]
-                                    templist[k]["entryamount"] = botinfo[0]["data"][k]["entryamount"]
-                                    templist[k]["entered"] = botinfo[0]["data"][k]["entered"]
-
-                            if j == 1:
-                                for k in range(0, len(templist)):
-                                    templist[k]["entryprice"] = botinfo[1]["data"][k]["entryprice"]
-                                    templist[k]["entryamount"] = botinfo[1]["data"][k]["entryamount"]
-                                    templist[k]["entered"] = botinfo[1]["data"][k]["entered"]
-
-                            if j == 2:
-                                for k in range(0, len(templist)):
-                                    templist[k]["entryprice"] = botinfo[2]["data"][k]["entryprice"]
-                                    templist[k]["entryamount"] = botinfo[2]["data"][k]["entryamount"]
-                                    templist[k]["entered"] = botinfo[2]["data"][k]["entered"]s
-                            """
 
                             if j == 0:
                                 self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))

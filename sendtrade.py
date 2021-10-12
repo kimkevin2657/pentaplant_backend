@@ -49,6 +49,10 @@ class sendtrade:
                 botinfo = self.dbcur.fetchall()[0]
 
                 for j in range(0, len(botinfo)):
+
+                    if botsettings[j]["currpyramiding"] == True:
+                        continue
+
                     currlist = botinfo[j]["data"]
 
                     for k in range(0, len(currlist)):
@@ -81,9 +85,6 @@ class sendtrade:
                         self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
                         self.dbconn.commit()
 
-                        self.dbcur.execute("SELECT botoneinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
-                        temp = self.dbcur.fetchall()
-
                     if j == 1:
 
                         self.dbcur.execute("UPDATE botsdata SET bottwoinfo = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
@@ -113,6 +114,10 @@ class sendtrade:
                 botinfo = self.dbcur.fetchall()[0]
 
                 for j in range(0, len(botinfo)):
+
+                    if botsettings[j]["currpyramiding"] == True:
+                        continue
+                    
                     currlist = botinfo[j]["data"]
 
                     for k in range(0, len(currlist)):
