@@ -14,6 +14,12 @@ DB_PORT = '5432'
 conn = psycopg2.connect(host='localhost', dbname=DB_NAME, user=DB_USER, password=DB_PASS, port='5432') # db에 접속
 cur = conn.cursor()
 
+cur.execute("SELECT orderbook FROM realtime WHERE (coin, exchange) = (%s, %s)", ("BTC/USDT", "Upbit"))
+orderbook = cur.fetchall()[0][0]
+
+buyprice = orderbook["askprice"]
+sellprice = orderbook["bidprice"]
+
 cur.execute("SELECT botone, bottwo, botthree FROM bots WHERE userid = %s", (userid,))
 temp = cur.fetchall()[0]
 

@@ -57,7 +57,7 @@ class sendtrade:
 
                     for k in range(0, len(currlist)):
                         if currlist[k]["entered"] == False:
-                            if currlist[k]["targetprice"] >= buyprice:
+                            if float(currlist[k]["targetprice"]) >= buyprice:
 
                                 currlist[k]["entryprice"] = buyprice
                                 currlist[k]["entered"] = True
@@ -122,7 +122,7 @@ class sendtrade:
 
                     for k in range(0, len(currlist)):
                         if currlist[k]["entered"] == True:
-                            if sellprice/currlist[k]["entryprice"] - 1.0 > float(botsettings[j]["percentreturn"])/100.0:
+                            if sellprice/float(currlist[k]["entryprice"]) - 1.0 > float(botsettings[j]["percentreturn"])/100.0:
                                 #currlist[k]["entryprice"] = sellprice
                                 currlist[k]["entryprice"] = 0
                                 currlist[k]["entered"] = False

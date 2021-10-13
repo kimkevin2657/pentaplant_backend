@@ -25,6 +25,9 @@ class memberspyramiding:
             self.dbcur.execute("SELECT botone, bottwo, botthree FROM bots WHERE userid = %s", (userlist[i][0],))
             botsettings = self.dbcur.fetchall()[0]
 
+            self.dbcur.execute("SELECT firsttrading FROM bots WHERE userid = %s", (userlist[i][0],))
+            firsttrading = self.dbcur.fetchall()[0]
+
             # skips over the user whose first bot range is deactivated
             # which means all the bots are disabled
             if botsettings[0]["active"] == False:
@@ -40,8 +43,11 @@ class memberspyramiding:
                 for j in range(0, len(botinfo)):
 
                     # skips if the currpyramiding is false
-                    if botsettings[j]["currpyramiding"] == False:
-                        continue
+                    """
+                    if not firsttrading[0]:
+                        if botsettings[j]["currpyramiding"] == False:
+                            continue
+                    """
 
                     # skips of the bot where pyramiding is not turned on
                     if botsettings[j]["pyramiding"] == False:
@@ -59,12 +65,19 @@ class memberspyramiding:
                         if tempbool:
                             break
 
+                    tempbool2 = False
+                    for k in range(0, len(botinfopyramiding[j])):
+                        if botinfopyramiding[j]["data"][k]["entered"] == True:
+                            tempbool2 = True
+                        if tempbool2:
+                            break
+
                     # if all ranges in the given bot is not entered
-                    if not tempbool:
+                    if not tempbool and not tempbool2:
                         
                         # then updates the pyramiding bot info
 
-                        entrynum = botsettings[j]["entrynumpyramiding"]
+                        entrynum = int(botsettings[j]["entrynumpyramiding"])
 
                         precentreturnpyramiding = float(botsettings[j]["percentreturnpyramiding"])
                         totalentryamount = 0.0
@@ -74,7 +87,7 @@ class memberspyramiding:
                         
                         entryamount = totalentryamount*(1.0/float(entrynum))
 
-                        bottomprice = botinfo[j]["data"][0]["baseprice"]
+                        bottomprice = float(botinfo[j]["data"][0]["baseprice"])
 
                         
                         templist = []
@@ -96,5 +109,7 @@ class memberspyramiding:
                             self.dbcur.execute("UPDATE botsdata SET botthreeinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
                             self.dbconn.commit()
 
+            self.dbcur.execute("UPDATE bots SET firsttrading = %s WHERE userid = %s", (False, userlist[i][0]))
+            self.dbconn.commit()
 
         return "success"    

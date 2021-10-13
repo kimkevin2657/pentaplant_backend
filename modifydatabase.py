@@ -18,6 +18,10 @@ DB_PORT = '5432'
 conn = psycopg2.connect(host='localhost', dbname=DB_NAME, user=DB_USER, password=DB_PASS, port='5432') # db에 접속
 cur = conn.cursor()
 
+cur.execute("ALTER TABLE bots ADD COLUMN firsttrading BOOLEAN")
+conn.commit()
+
+"""
 cur.execute("ALTER TABLE botsdata ADD COLUMN botoneinfopyramiding JSONB")
 conn.commit()
 
@@ -26,6 +30,7 @@ conn.commit()
 
 cur.execute("ALTER TABLE botsdata ADD COLUMN botthreeinfopyramiding JSONB")
 conn.commit()
+"""
 
 """
 cur.execute("ALTER TABLE transaction ADD COLUMN entrytime VARCHAR(256)")

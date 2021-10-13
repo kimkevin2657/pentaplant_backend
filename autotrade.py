@@ -4,6 +4,7 @@ from members import members
 from sendtrade import sendtrade
 from memberspyramiding import memberspyramiding
 from sendtradepyramiding import sendtradepyramiding
+from pyramidingconversion import pyramidingconversion
 import requests
 import json
 import psycopg2
@@ -27,6 +28,8 @@ def autotrade():
 
     sendtradepyramidingobj = sendtradepyramiding(dbcur,dbconn)
 
+    pyramidingconversionobj = pyramidingconversion(dbcur,dbconn)
+
     while(True):
 
         # fetches real time bitcoin price from the database
@@ -38,8 +41,13 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
-        buyprice = 101000.0
-        sellprice = 100000.0
+        
+        sellprice = 130000.0
+        buyprice = sellprice + 100.0
+
+        # checks whether the current price converts pyramiding or not
+        result = pyramidingconversionobj.update(buyprice, sellprice)
+        print( "  result    ", result)
 
         # updates the target prices if necessary
         result = membersobj.update(buyprice, sellprice)
@@ -47,7 +55,7 @@ def autotrade():
         #updates the pyramiding if necessary
         result = memberspyramidingobj.update(buyprice, sellprice)
         print(" result   ", result)
-
+        
 
         # checks whether any one of them is enter and executes order
         result2 = sendtradeobj.buytrade(buyprice, sellprice)
@@ -60,10 +68,12 @@ def autotrade():
         # checks whether any one of pyramiding is enter and executes order
         result4 = sendtradepyramidingobj.buytrade(buyprice, sellprice)
         print(" result4 ", result4)
+        
         # cheecks whether any one of pyramiding is sellable and executes order
         result5 = sendtradepyramidingobj.selltrade(buyprice, sellprice)
         print(" result5 ", result5)
 
+        
 
         # updates the target prices if necessary
         result6 = membersobj.update(buyprice, sellprice)
@@ -71,6 +81,8 @@ def autotrade():
         #updates the pyramiding if necessary
         result7 = memberspyramidingobj.update(buyprice, sellprice)
         print(" result   ", result7)
+
+        
 
 
         time.sleep(5)

@@ -25,6 +25,9 @@ class members:
             self.dbcur.execute("SELECT botone, bottwo, botthree FROM bots WHERE userid = %s", (userlist[i][0],))
             botsettings = self.dbcur.fetchall()[0]
 
+            self.dbcur.execute("SELECT firsttrading FROM bots WHERE userid = %s", (userlist[i][0],))
+            firsttrading = self.dbcur.fetchall()[0]
+
             # skips over the user whose first bot range is deactivated
             if botsettings[0]["active"] == False:
                 continue
@@ -46,8 +49,9 @@ class members:
 
                         ### checking to see if the current bot range is in pyramiding or not
                         ### updated october 7th
-                        if botsettings[j]["currpyramiding"] == True:
-                            continue
+                        if not firsttrading[0]:
+                            if botsettings[j]["currpyramiding"] == True:
+                                continue
 
                         if botsettings[j]["active"] == False:
                             continue
@@ -78,6 +82,9 @@ class members:
                             if j == 2:
                                 self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
                                 self.dbconn.commit()
+
+            self.dbcur.execute("UPDATE bots SET firsttrading = %s WHERE userid = %s", (False, userlist[i][0]))
+            self.dbconn.commit()
 
         return "success"
 
