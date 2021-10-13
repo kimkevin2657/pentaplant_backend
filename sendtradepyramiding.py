@@ -58,11 +58,19 @@ class sendtradepyramiding:
                 self.dbcur.execute("SELECT botoneinfopyramiding, bottwoinfopyramiding, botthreeinfopyramiding FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfo = self.dbcur.fetchall()[0]
 
+
+                maxrange = 0
+                for r in range(0, len(botinfo)):
+                    if botinfo[r] == None:
+                        maxrange = r
+                    else:
+                        maxrange = r
+
                 print(" === botinfo ", 0 , " ", json.dumps(botinfo[0],indent=4))
                 print(" === botinfo ", 1 , " ", json.dumps(botinfo[1],indent=4))
                 print(" === botinfo ", 2 , " ", json.dumps(botinfo[2],indent=4))
 
-                for j in range(0, len(botinfo)):
+                for j in range(0, maxrange):
 
 
                     if botsettings[j]["currpyramiding"] == False:
@@ -163,7 +171,14 @@ class sendtradepyramiding:
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinforegular = self.dbcur.fetchall()[0]
 
-                for j in range(0, len(botinfo)):
+                maxrange = 0
+                for r in range(0, len(botinfo)):
+                    if botinfo[r] == None:
+                        maxrange = r
+                    else:
+                        maxrange = r
+
+                for j in range(0, maxrange):
 
                     if botsettings[j]["currpyramiding"] == False:
                         continue

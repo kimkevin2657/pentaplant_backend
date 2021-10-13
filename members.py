@@ -34,13 +34,19 @@ class members:
             else:
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfo = self.dbcur.fetchall()[0]
+
+                maxrange = 0
+                for r in range(0, len(botsettings)):
+                    if botsettings[r]["active"] == True:
+                        maxrange = r
                 
                 # botinfo[0] = botoneinfo
                 # botinfo[0][0] = botoneinfo[0]
                 # if the currentprice is less than the highest target price, then skip
-                if botinfo[0]["data"][0]["baseprice"] > buyprice:
+                if not firsttrading[0]:
+                    if botinfo[0]["data"][0]["baseprice"] > buyprice:
 
-                    continue
+                        continue
                 else:
 
                     bottomprice = buyprice
@@ -83,8 +89,8 @@ class members:
                                 self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
                                 self.dbconn.commit()
 
-            self.dbcur.execute("UPDATE bots SET firsttrading = %s WHERE userid = %s", (False, userlist[i][0]))
-            self.dbconn.commit()
+            #self.dbcur.execute("UPDATE bots SET firsttrading = %s WHERE userid = %s", (False, userlist[i][0]))
+            #self.dbconn.commit()
 
         return "success"
 

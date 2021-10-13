@@ -31,6 +31,11 @@ class pyramidingconversion:
             #print(" === botsettings ", json.dumps(botsettings[1], indent=4))
             #print(" === botsettings ", json.dumps(botsettings[2], indent=4))
 
+            self.dbcur.execute("SELECT firsttrading FROM bots WHERE userid = %s", (userlist[i][0],))
+            firsttrading = self.dbcur.fetchall()[0][0]
+            if firsttrading:
+                continue
+
             # skips over the user whose first bot range is deactivated
             if botsettings[0]["active"] == False:
                 #print(" === skipping over this user since all bots inactive ")
@@ -45,13 +50,23 @@ class pyramidingconversion:
                 # if buyprice > baseprice, then currpyramiding = true
                 # if buyprice < baseprice, then currpyramiding = false
                 #  iff the upper level bot has all been entered
-                for j in range(0, len(botinfo)):
+
+                maxrange = 0
+                for r in range(0, len(botinfo)):
+                    if botinfo[r] == None:
+                        maxrange = r
+                    else:
+                        maxrange = r
+
+                #for j in range(0, len(botinfo)):
+                for j in range(0, maxrange):
                     #print(" === botinfo index ", j)
 
                     if j == 0:
 
                         tempbool = True
-                        for k in range(0, len(botinfo)):
+                        #for k in range(0, len(botinfo)):
+                        for k in range(0, maxrange):
                             for l in range(0, len(botinfo[k]["data"])):
                                 if botinfo[k]["data"][l]["entered"] == True:
                                     tempbool = False

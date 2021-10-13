@@ -40,7 +40,20 @@ class memberspyramiding:
                 self.dbcur.execute("SELECT botoneinfopyramiding, bottwoinfopyramiding, botthreeinfopyramiding FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfopyramiding = self.dbcur.fetchall()[0]
 
-                for j in range(0, len(botinfo)):
+                self.dbcur.execute("SELECT firsttrading FROM bots WHERE userid = %s", (userlist[i][0],))
+                firsttrading = self.dbcur.fetchall()[0][0]
+                print(" firsttrading for memberspyramiding   ", firsttrading)
+
+                maxrange = 0
+                for r in range(0, len(botinfo)):
+                    if botinfo[r] == None:
+                        maxrange = r
+                    else:
+                        maxrange = r
+
+                print("  maxrange for memberspyramiding   ", maxrange)
+
+                for j in range(0, maxrange):
 
                     # skips if the currpyramiding is false
                     """
@@ -59,18 +72,20 @@ class memberspyramiding:
 
                     # checks whether the given bot is all not entered
                     tempbool = False
-                    for k in range(0, len(botinfo[j])):
-                        if botinfo[j]["data"][k]["entered"] == True:
-                            tempbool = True
-                        if tempbool:
-                            break
+                    if not firsttrading:
+                        for k in range(0, len(botinfo[j])):
+                            if botinfo[j]["data"][k]["entered"] == True:
+                                tempbool = True
+                            if tempbool:
+                                break
 
                     tempbool2 = False
-                    for k in range(0, len(botinfopyramiding[j])):
-                        if botinfopyramiding[j]["data"][k]["entered"] == True:
-                            tempbool2 = True
-                        if tempbool2:
-                            break
+                    if not firsttrading:
+                        for k in range(0, len(botinfopyramiding[j])):
+                            if botinfopyramiding[j]["data"][k]["entered"] == True:
+                                tempbool2 = True
+                            if tempbool2:
+                                break
 
                     # if all ranges in the given bot is not entered
                     if not tempbool and not tempbool2:

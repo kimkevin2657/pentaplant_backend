@@ -48,7 +48,15 @@ class sendtrade:
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfo = self.dbcur.fetchall()[0]
 
-                for j in range(0, len(botinfo)):
+                
+                maxrange = 0
+                for r in range(0, len(botinfo)):
+                    if botinfo[r] == None:
+                        maxrange = r
+                    else:
+                        maxrange = r
+
+                for j in range(0, maxrange):
 
                     if botsettings[j]["currpyramiding"] == True:
                         continue
@@ -113,7 +121,14 @@ class sendtrade:
                 self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfo = self.dbcur.fetchall()[0]
 
-                for j in range(0, len(botinfo)):
+                maxrange = 0
+                for r in range(0, len(botinfo)):
+                    if botinfo[r] == None:
+                        maxrange = r
+                    else:
+                        maxrange = r
+
+                for j in range(0, maxrange):
 
                     if botsettings[j]["currpyramiding"] == True:
                         continue
