@@ -72,9 +72,9 @@ class members:
                                 currtarget = bottomprice - dollar_difference
                                 # should "entryprice" be currtarget vs currentprice?
                                 if k == 0:
-                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False, "baseprice": bottomprice})
+                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False, "baseprice": bottomprice, "amount": 0})
                                 else:
-                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False})
+                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False, "amount": 0})
                                 bottomprice = currtarget
 
 

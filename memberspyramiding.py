@@ -109,9 +109,9 @@ class memberspyramiding:
                         for k in range(0, entrynum):
                             currtarget = bottomprice*(1.0+precentreturnpyramiding/100.0)
                             if k == 0:
-                                templist.append({"targetprice": currtarget, "entryprice": buyprice, "entryamount": entryamount, "entered": False, "baseprice": bottomprice})
+                                templist.append({"targetprice": currtarget, "entryprice": buyprice, "entryamount": entryamount, "entered": False, "baseprice": bottomprice, "amount": 0})
                             else:
-                                templist.append({"targetprice": currtarget, "entryprice": buyprice, "entryamount": entryamount, "entered": False})
+                                templist.append({"targetprice": currtarget, "entryprice": buyprice, "entryamount": entryamount, "entered": False, "amount": 0})
                             bottomprice = currtarget
 
                         if j == 0:

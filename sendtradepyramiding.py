@@ -14,6 +14,9 @@ from time import gmtime, strftime
 import datetime
 import pytz
 
+import pyupbit
+from pyupbit import Upbit
+
 class sendtradepyramiding:
     def __init__(self, dbcur, dbconn):
         self.dbcur = dbcur
@@ -57,6 +60,15 @@ class sendtradepyramiding:
                 #self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 self.dbcur.execute("SELECT botoneinfopyramiding, bottwoinfopyramiding, botthreeinfopyramiding FROM botsdata WHERE userid = %s", (userlist[i][0],))
                 botinfo = self.dbcur.fetchall()[0]
+
+
+                apikeys = []
+                upbit = []
+                if mode == "deploy":
+                    apikeys = self.dbcur.execute("SELECT apikey, secretkey FROM users WHERE userid = %s", (userlist[i][0],))
+                    apikeys = self.dbcur.fetchall()[0]
+
+                    upbit = Upbit(apikeys[0], apikeys[1])
 
 
                 maxrange = 0
@@ -119,16 +131,34 @@ class sendtradepyramiding:
                                 # insert into transaction database
                                 # transaction code
                                 # id, userid, side, amount (in target coins) , currency, entryprice, commission, entrytime, baseamount (in base currency) 
-                                amount = 0.01
-                                currency = "BTC/USDT"
-                                entryprice = buyprice
-                                commission = 0.25
-                                entrytime = self.currenttime()
-                                # baseamount should be based on what's actually filled as well
-                                baseamount = float(currlist[k]["entryamount"])
-                                tupleval = (userlist[i][0], "buy", amount, currency, entryprice, commission, entrytime, baseamount)
-                                self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
-                                self.dbconn.commit()
+                                if mode == "deploy":
+                                    baseamount = currlist[k]["entryamount"]
+                                    commission = 0.25/100.0
+                                    inputbaseamount2 = baseamount - baseamount*commission
+                                    inputbaseamount = float("{:.2f}".format(inputbaseamount2))
+                                    entryprice = buyprice
+                                    currency = "BTC/USDT"
+                                    entrytime = self.currenttime()
+                                    amount = inputbaseamount/buyprice
+
+                                    currlist[k]["amount"] = float("{:.4f}".format(amount))
+                                    
+                                    temp = upbit.buy_market_order("USDT-BTC", inputbaseamount)
+
+                                    tupleval = (userlist[i][0], "buy", amount, currency, entryprice, commission, entrytime, baseamount, j, k, False)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount, range, rangeindex, pyramiding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
+                                else:
+                                    amount = 0.01
+                                    currency = "BTC/USDT"
+                                    entryprice = buyprice
+                                    commission = 0.25
+                                    entrytime = self.currenttime()
+                                    # baseamount should be based on what's actually filled as well
+                                    baseamount = float(currlist[k]["entryamount"])
+                                    tupleval = (userlist[i][0], "buy", amount, currency, entryprice, commission, entrytime, baseamount)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
 
                     print(" new currlist before updating db  ", currlist)
                     if j == 0:
@@ -198,15 +228,33 @@ class sendtradepyramiding:
                                 currlist[k]["entryprice"] = 0
                                 currlist[k]["entered"] = False
 
-                                amount = 0.01
-                                currency = "BTC/USDT"
-                                entryprice = sellprice
-                                commission = 0.25
-                                entrytime = self.currenttime()
-                                baseamount = currlist[k]["entryamount"]
-                                tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount)
-                                self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
-                                self.dbconn.commit()
+
+                                if mode == "deploy":
+                                    baseamount = currlist[k]["amount"]
+                                    commission = 0.25/100.0
+                                    inputbaseamount = float("{:.4f}".format(baseamount))
+                                    entryprice = sellprice
+                                    currency = "BTC/USDT"
+                                    entrytime = self.currenttime()
+                                    amount = sellprice*inputbaseamount - sellprice*inputbaseamount*commission
+
+                                    currlist[k]["amount"] = 0.0
+
+                                    temp = upbit.sell_market_ordeR("USDT-BTC", inputbaseamount)
+
+                                    tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount, j, k, False)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount, range, rangeindex, pyramiding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
+                                else:
+                                    amount = 0.01
+                                    currency = "BTC/USDT"
+                                    entryprice = sellprice
+                                    commission = 0.25
+                                    entrytime = self.currenttime()
+                                    baseamount = currlist[k]["entryamount"]
+                                    tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount,j,k,True)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount, range, rangeindex, pyramiding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
 
                         if j == 0:
                             self.dbcur.execute("UPDATE botsdata SET botoneinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))
@@ -250,15 +298,33 @@ class sendtradepyramiding:
                                 currlist[k]["entryprice"] = 0
                                 currlist[k]["entered"] = False
 
-                                amount = 0.01
-                                currency = "BTC/USDT"
-                                entryprice = sellprice
-                                commission = 0.25
-                                entrytime = self.currenttime()
-                                baseamount = currlist[k]["entryamount"]
-                                tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount)
-                                self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
-                                self.dbconn.commit()
+
+                                if mode == "deploy":
+                                    baseamount = currlist[k]["amount"]
+                                    commission = 0.25/100.0
+                                    inputbaseamount = float("{:.4f}".format(baseamount))
+                                    entryprice = sellprice
+                                    currency = "BTC/USDT"
+                                    entrytime = self.currenttime()
+                                    amount = sellprice*inputbaseamount - sellprice*inputbaseamount*commission
+
+                                    currlist[k]["amount"] = 0.0
+
+                                    temp = upbit.sell_market_ordeR("USDT-BTC", inputbaseamount)
+
+                                    tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount, j, k, False)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount, range, rangeindex, pyramiding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
+                                else:
+                                    amount = 0.01
+                                    currency = "BTC/USDT"
+                                    entryprice = sellprice
+                                    commission = 0.25
+                                    entrytime = self.currenttime()
+                                    baseamount = currlist[k]["entryamount"]
+                                    tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount,j,k,True)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount, range, rangeindex, pyramiding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
 
 
                         if j == 0:
@@ -295,15 +361,33 @@ class sendtradepyramiding:
                                 currlist[k]["entryprice"] = 0
                                 currlist[k]["entered"] = False
 
-                                amount = 0.01
-                                currency = "BTC/USDT"
-                                entryprice = sellprice
-                                commission = 0.25
-                                entrytime = self.currenttime()
-                                baseamount = currlist[k]["entryamount"]
-                                tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount)
-                                self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
-                                self.dbconn.commit()
+
+                                if mode == "deploy":
+                                    baseamount = currlist[k]["amount"]
+                                    commission = 0.25/100.0
+                                    inputbaseamount = float("{:.4f}".format(baseamount))
+                                    entryprice = sellprice
+                                    currency = "BTC/USDT"
+                                    entrytime = self.currenttime()
+                                    amount = sellprice*inputbaseamount - sellprice*inputbaseamount*commission
+
+                                    currlist[k]["amount"] = 0.0
+
+                                    temp = upbit.sell_market_ordeR("USDT-BTC", inputbaseamount)
+
+                                    tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount, j, k, False)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount, range, rangeindex, pyramiding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
+                                else:
+                                    amount = 0.01
+                                    currency = "BTC/USDT"
+                                    entryprice = sellprice
+                                    commission = 0.25
+                                    entrytime = self.currenttime()
+                                    baseamount = currlist[k]["entryamount"]
+                                    tupleval = (userlist[i][0], "sell", amount, currency, entryprice, commission, entrytime, baseamount,j,k,True)
+                                    self.dbcur.execute("INSERT INTO transaction (userid, side, amount, currency, entryprice, commission, entrytime, baseamount, range, rangeindex, pyramiding) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",tupleval)
+                                    self.dbconn.commit()
 
                         if j == 0:
                             self.dbcur.execute("UPDATE botsdata SET botoneinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": currlist}), userlist[i][0]))

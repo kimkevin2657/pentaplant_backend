@@ -9,7 +9,8 @@ import requests
 import json
 import psycopg2
 import time
-
+from pyupbit import Upbit
+import pyupbit
 
 def autotrade():
     DB_NAME = "pentaplant"
@@ -58,19 +59,19 @@ def autotrade():
         
 
         # checks whether any one of them is enter and executes order
-        result2 = sendtradeobj.buytrade(buyprice, sellprice)
+        result2 = sendtradeobj.buytrade(buyprice, sellprice, mode="dev")
         print(" result2  ", result2)
         # checks whether any one of them is sellable and executes order
-        result3 = sendtradeobj.selltrade(buyprice, sellprice)
+        result3 = sendtradeobj.selltrade(buyprice, sellprice, mode="dev")
         print(" result3  ", result3)
 
 
         # checks whether any one of pyramiding is enter and executes order
-        result4 = sendtradepyramidingobj.buytrade(buyprice, sellprice)
+        result4 = sendtradepyramidingobj.buytrade(buyprice, sellprice, mode="dev")
         print(" result4 ", result4)
         
         # cheecks whether any one of pyramiding is sellable and executes order
-        result5 = sendtradepyramidingobj.selltrade(buyprice, sellprice)
+        result5 = sendtradepyramidingobj.selltrade(buyprice, sellprice, mode="dev")
         print(" result5 ", result5)
 
         
