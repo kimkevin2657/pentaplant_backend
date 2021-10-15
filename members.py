@@ -8,6 +8,7 @@ from datetime import date, timedelta
 import json
 import requests
 import psycopg2
+from upbitapi import upbitapi
 
 class members:
     def __init__(self, dbcur, dbconn):
@@ -63,16 +64,29 @@ class members:
                             continue
                         else:
 
+                            if firsttrading[0]:
+                                upapi = upbitapi()
+                                total_balance = upapi.total_balance(userlist[i][0],self.dbcur)
+                                if total_balance[0] > 0 and total_balance[1] < 1:
+                                    tempamount = upapi.buy_usdt(userlist[i][0],self.dbcur)
+                                    botsettings[j]["amount"] = tempamount
+                                if total_balance[1] > 10:
+                                    botsettings[j]["amount"] = total_balance[1]
+
+
                             entryamount = float(botsettings[j]["amount"])*(1.0/float(botsettings[j]["entrynum"]))
                             dollar_difference = float(buyprice)*(float(botsettings[j]["percentrange"])/100.0)*(1.0/float(botsettings[j]["entrynum"]))
                             
+                            botsettings[j]["pricediff"] = dollar_difference
+
+                            bottomprice += dollar_difference + 0.01
                             
                             templist = []
                             for k in range(0, botsettings[j]["entrynum"]):
                                 currtarget = bottomprice - dollar_difference
                                 # should "entryprice" be currtarget vs currentprice?
                                 if k == 0:
-                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False, "baseprice": bottomprice, "amount": 0})
+                                    templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False, "baseprice": buyprice, "amount": 0})
                                 else:
                                     templist.append({"targetprice": currtarget, "entryprice": currtarget, "entryamount": entryamount, "entered": False, "amount": 0})
                                 bottomprice = currtarget
@@ -88,6 +102,19 @@ class members:
                             if j == 2:
                                 self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userlist[i][0]))
                                 self.dbconn.commit()
+
+                            if j == 0:
+                                self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(botsettings[j]), userlist[i][0]))
+                                self.dbconn.commit()
+
+                            if j == 1:
+                                self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(botsettings[j]), userlist[i][0]))
+                                self.dbconn.commit()
+                            if j == 2:
+                                self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(botsettings[j]), userlist[i][0]))
+                                self.dbconn.commit()
+
+
 
             #self.dbcur.execute("UPDATE bots SET firsttrading = %s WHERE userid = %s", (False, userlist[i][0]))
             #self.dbconn.commit()

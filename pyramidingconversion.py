@@ -55,8 +55,11 @@ class pyramidingconversion:
                 for r in range(0, len(botinfo)):
                     if botinfo[r] == None:
                         maxrange = r
+                        break
                     else:
                         maxrange = r
+
+                print(" maxrange at pyramidingconversion  ", maxrange)
 
                 #for j in range(0, len(botinfo)):
                 for j in range(0, maxrange):

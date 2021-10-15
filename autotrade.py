@@ -13,6 +13,10 @@ from pyupbit import Upbit
 import pyupbit
 
 def autotrade():
+
+
+    mode = "dev"
+
     DB_NAME = "pentaplant"
     DB_USER = "pentaplant"
     DB_PASS = "pentaplant_landingpage"
@@ -42,10 +46,6 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
-        
-        sellprice = 130000.0
-        buyprice = sellprice + 100.0
-
         # checks whether the current price converts pyramiding or not
         result = pyramidingconversionobj.update(buyprice, sellprice)
         print( "  result    ", result)
@@ -59,19 +59,19 @@ def autotrade():
         
 
         # checks whether any one of them is enter and executes order
-        result2 = sendtradeobj.buytrade(buyprice, sellprice, mode="dev")
+        result2 = sendtradeobj.buytrade(buyprice, sellprice, mode=mode)
         print(" result2  ", result2)
         # checks whether any one of them is sellable and executes order
-        result3 = sendtradeobj.selltrade(buyprice, sellprice, mode="dev")
+        result3 = sendtradeobj.selltrade(buyprice, sellprice, mode=mode)
         print(" result3  ", result3)
 
 
         # checks whether any one of pyramiding is enter and executes order
-        result4 = sendtradepyramidingobj.buytrade(buyprice, sellprice, mode="dev")
+        result4 = sendtradepyramidingobj.buytrade(buyprice, sellprice, mode=mode)
         print(" result4 ", result4)
         
         # cheecks whether any one of pyramiding is sellable and executes order
-        result5 = sendtradepyramidingobj.selltrade(buyprice, sellprice, mode="dev")
+        result5 = sendtradepyramidingobj.selltrade(buyprice, sellprice, mode=mode)
         print(" result5 ", result5)
 
         
@@ -84,11 +84,8 @@ def autotrade():
         print(" result   ", result7)
 
         
+        time.sleep(10)
 
-
-        time.sleep(5)
-
-        break
 
 
 

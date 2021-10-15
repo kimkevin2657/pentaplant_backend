@@ -8,6 +8,7 @@ import json
 
 from pyupbit import Upbit
 import pyupbit
+import psycopg2
 
 
 def convert_datetime_timezone():
@@ -22,20 +23,51 @@ def convert_datetime_timezone():
 
 
 
-upbit = Upbit("j8wIwxP7cHhAMWkXm8m11g3uEMf2QKf5C19AqpDi", "tZ1KkCe4slf3rxc8FjvHKzrDQGrV6RWzSyfJ1pxd")
+DB_NAME = 'pentaplant'
+DB_USER = 'pentaplant'
+DB_PASS = 'pentaplant_landingpage'
+DB_HOST = 'localhost'
+DB_PORT = '5432'
+
+
+
+conn = psycopg2.connect(host='localhost', dbname=DB_NAME, user=DB_USER, password=DB_PASS, port='5432') # db에 접속
+cur = conn.cursor()
+
+cur.execute("SELECT apikey, secretkey FROM users WHERE userid = %s", (1,))
+temp = cur.fetchall()[0]
+
+upbit = Upbit(temp[0], temp[1])
+
+print(upbit.get_balance("KRW"))
+print(upbit.get_balance("USDT"))
+print(upbit.get_balance("BTC"))
+
+
+
+"""
+upbit = Upbit("vEJz0MJY7tmcREx07hIDF9wFS3dkKdW06LeY8bTC", "xYxwyOtUwss4EZsJvtEfLdi6WrxZvf53QgHRgAa2")
 
 print(upbit.get_balance("USDT"))
 
-temp = upbit.get_balance("KRW")
-print(temp)
+krw = upbit.get_balance("KRW")
+print(krw)
+krw2 = krw*(1.0 - 0.0025)
+inputkrw = int(krw2)
+print(krw)
 
 temp = upbit.get_balance("BTC")
 print(temp)
 #temp - 10000.0
+"""
 
-temp = upbit.buy_market_order("KRW-BTC", temp)
+
+"""
+temp = upbit.buy_market_order("KRW-BTC", inputkrw)
 
 print(temp)
+"""
+
 #print(json.dumps(upbit.buy_market_order("KRW-BTC", temp),indent=4))
 
 #print()
