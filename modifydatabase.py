@@ -18,7 +18,12 @@ DB_PORT = '5432'
 conn = psycopg2.connect(host='localhost', dbname=DB_NAME, user=DB_USER, password=DB_PASS, port='5432') # db에 접속
 cur = conn.cursor()
 
+#cur.execute("INSERT INTO users (userid, email, password, balance, apikey, secretkey, botactive) VALUES (%s, %s, %s, %s, %s, %s, %s)",(2, "test2", "test2", 50, "FDL7QVh1gpoFlrPT54tcBrnweHvbNlnyxBwxj5X6", "5Q2VcCUCM9qfWWPDvNJYTkARVPU5yqVf9Xs0GjiY", True))
 
+#conn.commit()
+
+cur.execute("INSERT INTO botsdata (userid) VALUES (%s)", (5,))
+conn.commit()
 
 """
 cur.execute("ALTER TABLE transaction ADD COLUMN range INTEGER")

@@ -41,18 +41,7 @@ class upbitapi:
             print(ex)
 
         return usdt       
-    def buy_usdt2(self, userid, cur):
-        from pyupbit import Upbit
-        import pyupbit
-        import time
-        cur.execute("SELECT apikey, secretkey FROM users WHERE userid = %s", (userid,))
-        temp = cur.fetchall()[0]
-        upbit = Upbit(temp[0], temp[1])
-        btc = upbit.get_balance("BTC")
-        btc = float("{:.8f}".format(btc*(1.0-0.0025)))
-        temp = upbit.sell_market_order("USDT-BTC", btc)
-        print(" ===== upbitapi  buy_usdt2  executed   ", temp)
-        time.sleep(1)
+    
 
     def buy_usdt(self, userid, cur):
         from pyupbit import Upbit
@@ -70,7 +59,6 @@ class upbitapi:
         krw2 = int("{:.0f}".format(krw*(1.0 - 0.0025)))
         try:
             temp = upbit.buy_market_order("KRW-BTC", krw2)
-            print(" ===== upbitapi  buy_usdt   buy KRW-BTC  executed   ", temp)
         except Exception as ex:
             print(ex)
         time.sleep(1)
@@ -79,10 +67,9 @@ class upbitapi:
             btc = upbit.get_balance("BTC")
         except Exception as ex:
             print(ex)
-        btc = float("{:.8f}".format(btc*(1.0 - 0.0025)))
+        btc = float("{:.4f}".format(btc*(1.0 - 0.0025)))
         try:
             temp = upbit.sell_market_order("USDT-BTC", btc)
-            print(" ===== upbitapi  buy_usdt   sell USDT-BTC  executed   ", temp)
         except Exception as ex:
             print(ex)
         time.sleep(1)

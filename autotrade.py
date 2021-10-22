@@ -15,7 +15,7 @@ import pyupbit
 def autotrade():
 
 
-    mode = "dev"
+    mode = "deploy"
 
     DB_NAME = "pentaplant"
     DB_USER = "pentaplant"
@@ -58,6 +58,7 @@ def autotrade():
         print(" result   ", result)
         
 
+
         # checks whether any one of them is enter and executes order
         result2 = sendtradeobj.buytrade(buyprice, sellprice, mode=mode)
         print(" result2  ", result2)
@@ -83,8 +84,10 @@ def autotrade():
         result7 = memberspyramidingobj.update(buyprice, sellprice)
         print(" result   ", result7)
 
+
         
         time.sleep(10)
+        break
 
 
 

@@ -58,9 +58,8 @@ def realtime_upbit():
                 dbcur.execute("UPDATE realtime SET orderbook = %s WHERE (coin, exchange) = (%s, %s)", (tempjson, "ADA/USDT", "Upbit"))
                 dbconn.commit()
 
-        time.sleep(10)
 
-        break
+        time.sleep(5)
 
 
 

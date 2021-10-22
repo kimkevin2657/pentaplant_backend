@@ -67,31 +67,11 @@ class members:
                             if firsttrading[0]:
                                 upapi = upbitapi()
                                 total_balance = upapi.total_balance(userlist[i][0],self.dbcur)
-
-                                print(" ==== total balance  ", total_balance[0], "   ", total_balance[1], "   ", total_balance[2])
-
-                                # if there are currently bitcoins
-                                if total_balance[2] > 0:
-                                    upapi.buy_usdt2(userlist[i][0], self.dbcur)
-
-                                # if there are currently KRW
-                                if total_balance[0] > 0:
-                                    tempamount = upapi.buy_usdt(userlist[i][0], self.dbcur)
-                                    botsettings[j]["amount"] = tempamount
-
-                                """
-                                # if there are KRW but no USDT
                                 if total_balance[0] > 0 and total_balance[1] < 1:
                                     tempamount = upapi.buy_usdt(userlist[i][0],self.dbcur)
                                     botsettings[j]["amount"] = tempamount
-                                """
-                                #
-                                # temporary code to evenly split the total amount
-                                #
-                                total_balance = upapi.total_balance(userlist[i][0], self.dbcur)
-                                for r in range(0, maxrange+1):
-                                    botsettings[r]["amount"] = float("{:.8f}".format(float(total_balance[1])/float(maxrange+1)))
-
+                                if total_balance[1] > 10:
+                                    botsettings[j]["amount"] = total_balance[1]
 
 
                             entryamount = float(botsettings[j]["amount"])*(1.0/float(botsettings[j]["entrynum"]))
