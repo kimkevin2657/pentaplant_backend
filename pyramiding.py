@@ -13,7 +13,7 @@ class pyramiding:
     def __init__(self, dbcur, dbconn):
         self.dbcur = dbcur
         self.dbconn = dbconn
-        self.update = update()
+        self.update = update(self.dbcur, self.dbconn)
 
     def initialize(self, userid, buyprice, botsettings):
 
@@ -59,7 +59,7 @@ class pyramiding:
 
 
 
-    def update(self, buyprice, sellprice):
+    def updates(self, buyprice, sellprice):
 
         self.dbcur.execute("SELECT userid FROM users WHERE botactive = True")
         userlist = self.dbcur.fetchall()
@@ -73,7 +73,7 @@ class pyramiding:
             bottwo = botsettings[1]
             botthree = botsettings[2]
 
-            self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo, botoneinfopyramiding, bottwoinfopyramiding, botthreeinfopyramiding, firsttrading FROM botsdata WHERE userid = %s", (userid,))
+            self.dbcur.execute("SELECT botoneinfo, bottwoinfo, botthreeinfo, botoneinfopyramiding, bottwoinfopyramiding, botthreeinfopyramiding FROM botsdata WHERE userid = %s", (userid,))
             temp = self.dbcur.fetchall()[0]
             botinfo = temp[:3]
             botoneinfo = temp[0]
@@ -83,8 +83,9 @@ class pyramiding:
             botoneinfopyramiding = temp[3]
             bottwoinfopyramiding = temp[4]
             botthreeinfopyramiding = temp[5]
-            firsttrading = temp[6]
 
+            self.dbcur.execute("SELECT firsttrading FROM bots WHERE userid = %s", (userid,))
+            firsttrading = self.dbcur.fetchall()[0][0]
 
             maxrange = 0
             for j in range(0, len(botsettings)):
@@ -99,8 +100,11 @@ class pyramiding:
                 continue
 
             if firsttrading:
-
+                
                 self.initialize(userid, buyprice, botsettings)
+
+                self.dbcur.execute("UPDATE bots SET firsttrading = %s WHERE userid = %s", (False, userid))
+                self.dbconn.commit()
 
             if not firsttrading:
 
@@ -110,16 +114,16 @@ class pyramiding:
                 nopyramiding = True
                 if botsettings[0]["pyramiding"] == True:
                     nopyramiding = False
-                for q in range(0, len(botoneinfo["data"])):
-                    if botoneinfo["data"][q]["entered"] == True:
-                        downpyramidingexited = False
-                for q in range(0, len(bottwoinfo["data"])):
-                    if bottwoinfo["data"][q]["entered"] == True:
-                        downpyramidingexited = False
-                for q in range(0, len(botthreeinfo["data"])):
-                    if botthreeinfo["data"][q]["entered"] == True:
-                        downpyramidingexited = False
-                
+
+                maxrange = 0
+                for q in range(0, len(botsettings)):
+                    if botsettings[q]["active"] == True:
+                        maxrange = q
+                for q in range(0, maxrange+1):
+                    for k in range(0, len(botinfo[q]["data"])):
+                        if botinfo[q]["data"][k]["entered"] == True:
+                            downpyramidingexited = False
+
                 if downpyramidingexited and nopyramiding and buyprice > botoneinfo["data"][0]["baseprice"]:
 
                     self.initialize(userid, buyprice, botsettings)
@@ -183,7 +187,7 @@ class pyramiding:
                             self.dbconn.commit()
 
                         
-
+        return "success"
 
 
 

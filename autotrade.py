@@ -51,7 +51,7 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
-        result = pyramidingobj.update(buyprice, sellprice)
+        result = pyramidingobj.updates(buyprice, sellprice)
         print(" ==== 11 ")
 
         result = sendtradeobj.buytrade(buyprice, sellprice, mode=mode)
@@ -66,7 +66,7 @@ def autotrade():
         result = sendtradepyramidingobj.selltrade(buyprice, sellprice, mode=mode)
         print(" ==== 55")
 
-        result = pyramidingobj.update(buyprice, sellprice)
+        result = pyramidingobj.updates(buyprice, sellprice)
         print( " ==== 66")
 
         """
