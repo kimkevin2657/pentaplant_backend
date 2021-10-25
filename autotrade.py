@@ -11,6 +11,8 @@ import psycopg2
 import time
 from pyupbit import Upbit
 import pyupbit
+from update import update
+from pyramiding import pyramiding
 
 def autotrade():
 
@@ -35,6 +37,9 @@ def autotrade():
 
     pyramidingconversionobj = pyramidingconversion(dbcur,dbconn)
 
+    updateobj = update(dbcur, dbconn)
+    pyramidingobj = pyramiding(dbcur, dbconn)
+
     while(True):
 
         # fetches real time bitcoin price from the database
@@ -46,6 +51,25 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
+        result = pyramidingobj.update(buyprice, sellprice)
+        print(" ==== 11 ")
+
+        result = sendtradeobj.buytrade(buyprice, sellprice, mode=mode)
+        print(" ==== 22")
+
+        result = sendtradeobj.selltrade(buyprice, sellprice, mode=mode)
+        print(" ==== 33")
+
+        result = sendtradepyramidingobj.buytrade(buyprice, sellprice, mode=mode)
+        print(" ==== 44 ")
+
+        result = sendtradepyramidingobj.selltrade(buyprice, sellprice, mode=mode)
+        print(" ==== 55")
+
+        result = pyramidingobj.update(buyprice, sellprice)
+        print( " ==== 66")
+
+        """
         # checks whether the current price converts pyramiding or not
         result = pyramidingconversionobj.update(buyprice, sellprice)
         print( "  result    ", result)
@@ -83,11 +107,12 @@ def autotrade():
         #updates the pyramiding if necessary
         result7 = memberspyramidingobj.update(buyprice, sellprice)
         print(" result   ", result7)
+        """
 
 
         
         time.sleep(10)
-        break
+        #break
 
 
 

@@ -16,35 +16,33 @@ class pyramiding:
         self.update = update()
 
     def initialize(self, userid, buyprice, botsettings):
+
         self.update.updates(userid, buyprice)
+
         for j in range(0, len(botsettings)):
             if botsettings[j]["active"] == False:
                 continue
 
-            maxrange = 0
-            for q in range(0, len(botsettings)):
-                if botsettings[q]["active"] == True:
-                    maxrange = q
-            for q in range(0, maxrange):
-                if q == 0:
-                    self.dbcur.execute("SELECT botone FROM bots WHERE userid = %s", (userid,))
-                    currbot = self.dbcur.fetchall()[0][0]
-                    currbot["currpyramiding"] = False
-                    self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(currbot), userid))
-                    self.dbconn.commit()
-                if q == 1:
-                    self.dbcur.execute("SELECT bottwo FROM bots WHERE userid = %s", (userid,))
-                    currbot = self.dbcur.fetchall()[0][0]
-                    currbot["currpyramiding"] = False
-                    self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(currbot), userid))
-                    self.dbconn.commit()
-                if q == 2:
-                    self.dbcur.execute("SELECT botthree FROM bots WHERE userid = %s", (userid,))
-                    currbot = self.dbcur.fetchall()[0][0]
-                    currbot["currpyramiding"] = False
-                    self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(currbot), userid))
-                    self.dbconn.commit()
+            if j == 0:
+                self.dbcur.execute("SELECT botone FROM bots WHERE userid = %s", (userid,))
+                currbot = self.dbcur.fetchall()[0][0]
+                currbot["currpyramiding"] = False
+                self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(currbot), userid))
+                self.dbconn.commit()
+            if j == 1:
+                self.dbcur.execute("SELECT bottwo FROM bots WHERE userid = %s", (userid,))
+                currbot = self.dbcur.fetchall()[0][0]
+                currbot["currpyramiding"] = False
+                self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(currbot), userid))
+                self.dbconn.commit()
+            if j == 2:
+                self.dbcur.execute("SELECT botthree FROM bots WHERE userid = %s", (userid,))
+                currbot = self.dbcur.fetchall()[0][0]
+                currbot["currpyramiding"] = False
+                self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(currbot), userid))
+                self.dbconn.commit()
 
+        for j in range(0, len(botsettings)):
             if botsettings[j]["pyramiding"] == True:
                 botpyramiding = ""
                 if j == 0:
@@ -57,7 +55,8 @@ class pyramiding:
                     self.dbcur.execute("SELECT botthreeinfo FROM botsdata WHERE userid = %s", (userid,))
                     botpyramiding = self.dbcur.fetchall()[0][0]
 
-                self.update.updatepyramiding(userid, botpyramiding[0]["baseprice"], j)
+                self.update.updatepyramiding(userid, botpyramiding["data"][0]["baseprice"], j)
+
 
 
     def update(self, buyprice, sellprice):
@@ -86,6 +85,13 @@ class pyramiding:
             botthreeinfopyramiding = temp[5]
             firsttrading = temp[6]
 
+
+            maxrange = 0
+            for j in range(0, len(botsettings)):
+                if botsettings[j]["active"] == True:
+                    maxrange = j
+
+
             self.dbcur.execute("SELECT botactive FROM users WHERE userid = %s", (userid,))
             botactive = self.dbcur.fetchall()[0][0]
             
@@ -98,85 +104,85 @@ class pyramiding:
 
             if not firsttrading:
 
-                # if all downpyramiding is exited and currpyramiding = False
+                # if all downpyramiding is exited and pyramiding = False
                 # , then self.update.updates, and self.update.updatepyramiding again
                 downpyramidingexited = True
                 nopyramiding = True
-                for q in range(0, len(botsettings)):
-                    if botsettings[q]["currpyramiding"] == True:
-                        nopyramiding = False
-                for q in range(0, len(botoneinfo)):
-                    if botoneinfo[q]["entered"] == True:
+                if botsettings[0]["pyramiding"] == True:
+                    nopyramiding = False
+                for q in range(0, len(botoneinfo["data"])):
+                    if botoneinfo["data"][q]["entered"] == True:
                         downpyramidingexited = False
-                for q in range(0, len(bottwoinfo)):
-                    if bottwoinfo[q]["entered"] == True:
+                for q in range(0, len(bottwoinfo["data"])):
+                    if bottwoinfo["data"][q]["entered"] == True:
                         downpyramidingexited = False
-                for q in range(0, len(botthreeinfo)):
-                    if botthreeinfo[q]["entered"] == True:
+                for q in range(0, len(botthreeinfo["data"])):
+                    if botthreeinfo["data"][q]["entered"] == True:
                         downpyramidingexited = False
                 
-                if downpyramidingexited and nopyramiding:
+                if downpyramidingexited and nopyramiding and buyprice > botoneinfo["data"][0]["baseprice"]:
 
                     self.initialize(userid, buyprice, botsettings)
 
 
-                # if only one downpyramiding entered and price > baseprice, 
+                # if only one downpyramiding entered and sell price > baseprice, 
                 # then set currpyramiding = True if pyramiding = True
                 # then change one'th pyramiding to entered = True, set entryamount, amount
                 # then change one'th downpyramiding to entered = False, entryamount = 0, amount = 0
-                onlyone = False
-                if botoneinfo[0]["entered"] == True:
-                    onlyone = True
-                for q in range(1, len(botoneinfo)):
-                    if botoneinfo[q]["entered"] == True:
-                        onlyone = False
-                if onlyone and sellprice > botoneinfo[0]["baseprice"] and botsettings[0]["pyramiding"] == True:
-                    self.dbcur.execute("SELECT botone FROM bots WHERE userid = %s", (userid,))
-                    tempbot = self.dbcur.fetchall()[0][0]
-                    tempbot["currpyramiding"] = True
-                    self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(tempbot), userid))
-                    self.dbconn.commit()
-
-                    # then change one'th pyramiding to entered = True, set entryamount, amount
-
-                    {
-                        "amount": 0.10991256,
-                        "entered": true,
-                        "baseprice": 62417.66,
-                        "entryprice": 62390.369,
-                        "entryamount": 0,
-                        "targetprice": 62417.67
-                    }
-                            {
-                                "amount": 0,
-                                "entered": false,
-                                "baseprice": 62417.66,
-                                "entryprice": 62390.369,
-                                "entryamount": 87095203.10862637,
-                                "targetprice": 62729.7483
-                            }
-
-                    self.dbcur.execute("SELECT botoneinfopyramiding FROM botsdata WHERE userid = %s", (userid,))
-                    tempbot = self.dbcur.fetchall()[0][0]
-                    tempbot[0]["entered"] = True
-                    tempbot[0]["amount"] = botoneinfo[0]["amount"]
-                    tempbot[0]["entryamount"] = botoneinfo[0]["entryamount"]
-                    
 
 
-
-
-                    # then change one'th downpyramiding to entered = False, entryamount = 0, amount = 0
-
-
-
-                # if no downpyramiding entered and some pyramiding entered and sellprice < baseprice, 
+                # if some pyramiding is entered and buy price < baseprice, 
                 # then set currpyramiding = False if pyramiding = True
-                # convert botinfopyramiding to botinfo 
+                for j in range(0, maxrange):
+                    pyramidingentered = False
+                    for q in range(0, len(botinfopyramiding[j]["data"])):
+                        if botinfopyramiding[j]["data"][q]["entered"] == True:
+                            pyramidingentered = True
+                    if pyramidingentered and botsettings[j]["pyramiding"] == True and botsettings[j]["currpyramiding"] == True and buyprice < botinfopyramiding[j]["data"][0]["baseprice"]:
+                        pyramidingcount = 0
+                        for q in range(0, len(botinfopyramiding[j]["data"])):
+                            if botinfopyramiding[j]["data"][q]["entered"] == True:
+                                pyramidingcount = q
+                        pyramidingcount += 1
 
+                        for q in range(0, pyramidingcount):
+                            botinfo[j]["data"][q]["amount"] = botinfopyramiding[j]["data"][q]["amount"]
+                            botinfo[j]["data"][q]["entered"] = True
+                            botinfo[j]["data"][q]["entryprice"] = botinfopyramiding[j]["data"][q]["entryprice"]
+                            botinfo[j]["data"][q]["entryamount"] = botinfopyramiding[j]["data"][q]["entryamount"]
+                            if q == 0:
+                                botinfo[j]["data"][q]["baseprice"] = botinfopyramiding[j]["data"][q]["baseprice"]
+                            
+                        self.update.updatepyramiding(userid, botinfo[j]["data"][0]["baseprice"], j)
+                        
+                        if j == 0:
+                            self.dbcur.execute("SELECT botone FROM bots WHERE userid = %s", (userid,))
+                            tempbot = self.dbcur.fetchall()[0][0]
+                            tempbot["currpyramiding"] = False
+                            self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(tempbot), userid))
+                            self.dbconn.commit()
 
+                            self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps(botinfo[j]), userid))
+                            self.dbconn.commit()
 
+                        if j == 1:
+                            self.dbcur.execute("SELECT bottwo FROM bots WHERE userid = %s", (userid,))
+                            tempbot = self.dbcur.fetchall()[0][0]
+                            tempbot["currpyramiding"] = False
+                            self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(tempbot), userid))
+                            self.dbconn.commit()
+                            self.dbcur.execute("UPDATE botsdata SET bottwoinfo = %s WHERE userid = %s", (json.dumps(botinfo[j]), userid))
+                            self.dbconn.commit()
+                        if j == 2:
+                            self.dbcur.execute("SELECT botthree FROM bots WHERE userid = %s", (userid,))
+                            tempbot = self.dbcur.fetchall()[0][0]
+                            tempbot["currpyramiding"] = False
+                            self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(tempbot), userid))
+                            self.dbconn.commit()
+                            self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps(botinfo[j]), userid))
+                            self.dbconn.commit()
 
+                        
 
 
 

@@ -15,6 +15,7 @@ class update:
         self.dbcur = dbcur
         self.dbconn = dbconn
 
+    # takes in userid and price and updates the botsdata and bots
     def updates(self, userid, price):
         self.dbcur.execute("SELECT botone, bottwo, botthree FROM bots WHERE userid = %s", (userid,))
         botsettings = self.dbcur.fetchall()[0]
@@ -35,7 +36,7 @@ class update:
             templist = []
             for k in range(0, botsettings[j]["entrynum"]):
                 if k == 0:
-                    templist.append({"targetprice": bottomprice, "entryprice": bottomprice, "entryamount": entryamount, "entered": False, "baseprice": price, "amount": 0})
+                    templist.append({"targetprice": bottomprice, "entryprice": bottomprice, "entryamount": entryamount, "entered": False, "baseprice": bottomprice, "amount": 0})
                 else:
                     templist.append({"targetprice": bottomprice, "entryprice": bottomprice, "entryamount": entryamount, "entered": False, "amount": 0})
                 bottomprice -= dollar_difference
@@ -51,12 +52,14 @@ class update:
                 self.dbconn.commit()
                 self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(botsettings[j]), userid))
                 self.dbconn.commit()
+
             if j == 2:
                 self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
                 self.dbconn.commit()
                 self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(botsettings[j]), userid))
                 self.dbconn.commit()
 
+    # takes in userid, price, index of the bots and updates the botsdata and bots
     def updatepyramiding(self, userid, price, index):
         self.dbcur.execute("SELECT botone, bottwo, botthree FROM bots WHERE userid = %s", (userid,))
         botsettings = self.dbcur.fetchall()[0]
@@ -85,17 +88,17 @@ class update:
         if index == 0:
             self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
             self.dbconn.commit()
-            self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(botsettings[j]), userid))
+            self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(botsettings[index]), userid))
             self.dbconn.commit()
 
         if index == 1:
             self.dbcur.execute("UPDATE botsdata SET bottwoinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
             self.dbconn.commit()
-            self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(botsettings[j]), userid))
+            self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(botsettings[index]), userid))
             self.dbconn.commit()
         if index == 2:
             self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
             self.dbconn.commit()
-            self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(botsettings[j]), userid))
+            self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(botsettings[index]), userid))
             self.dbconn.commit()
 
