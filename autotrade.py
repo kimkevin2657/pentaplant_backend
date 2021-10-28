@@ -51,14 +51,21 @@ def autotrade():
         buyprice = orderbook["askprice"]
         sellprice = orderbook["bidprice"]
 
+        # pyramiding.py, update.py, sendtrade.py
+        # realtime_upbit.py, realtime_upbit_balance.py, upbitapi.py 
+        
         result = pyramidingobj.updates(buyprice, sellprice)
         print(" ==== 11 ")
 
+
         result = sendtradeobj.buytrade(buyprice, sellprice, mode=mode)
-        print(" ==== 22")
+  
+
 
         result = sendtradeobj.selltrade(buyprice, sellprice, mode=mode)
-        print(" ==== 33")
+
+
+        """
 
         result = sendtradepyramidingobj.buytrade(buyprice, sellprice, mode=mode)
         print(" ==== 44 ")
@@ -68,6 +75,12 @@ def autotrade():
 
         result = pyramidingobj.updates(buyprice, sellprice)
         print( " ==== 66")
+        """
+
+
+
+
+
 
         """
         # checks whether the current price converts pyramiding or not
@@ -112,7 +125,10 @@ def autotrade():
 
         
         time.sleep(10)
-        #break
+
+        if mode != "deploy":
+            break
+
 
 
 

@@ -31,6 +31,14 @@ import json
 
 temp = Upbit("vEJz0MJY7tmcREx07hIDF9wFS3dkKdW06LeY8bTC", "xYxwyOtUwss4EZsJvtEfLdi6WrxZvf53QgHRgAa2")
 
+usdt = temp.get_balance("USDT")
+print(usdt)
+btc = temp.get_balance("BTC")
+print(btc)
+
+print()
+
+
 print(json.dumps(temp.get_balances(), indent=4))
 
 """

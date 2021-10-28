@@ -54,6 +54,7 @@ def login():
             data = request.get_json()
         except Exception as ex:
             print(ex)
+            pass
         print(data)
 
         query = False
@@ -141,9 +142,22 @@ def totalbalance():
             data = request.get_json()
         except Exception as ex:
             print(ex)
+            pass
         print(data)
 
-        sessionToken = data["sessionToken"]
+        sessionToken = ""
+        sessionTokenbool = False
+        try:
+            sessionToken = data["sessionToken"]
+        except Exception as ex:
+            print(ex)
+            sessionTokenbool = True
+            pass
+
+        print(" ====== /totalbalance  sessiontokenbool   ", sessionTokenbool)
+        if sessionTokenbool:
+            return json.dumps({"USDT": 0, "BTC": 0}), 200, {"contentType": "application/json"}
+
 
         print(" ======= sessionToken   ", sessionToken)
 
@@ -158,19 +172,23 @@ def totalbalance():
         cur.execute("SELECT apikey, secretkey FROM users WHERE email = %s", (email,))
         temp = cur.fetchall()
         print(" =========  temp  ", temp)
+        print(" =========  apikey  ", temp[0][0], "   ",type(temp[0][0]))
+        print(" ===========  secretkey  ", temp[0][1], "   ", type(temp[0][1]))
         if len(temp) != 0 and temp != None:
             if len(temp[0]) != 0 and temp[0] != None:
                 if temp[0][0] != None:
+                    print( " =========   execute fetch balance   ")
+                    upbitobj = Upbit(temp[0][0], temp[0][1])
 
-                    usdt = 0
-                    btc = 0
-                    try:
-                        upbit = Upbit(temp[0], temp[1])
-                        usdt = upbit.get_balance("USDT")
-                        btc = upbit.get_balance("BTC")
-                    except Exception as ex:
-                        print(ex)
+                    usdt = upbitobj.get_balance("USDT")
+                    btc = upbitobj.get_balance("BTC")
 
+                    print( "= =======  usdt   ", usdt)
+
+                    print( "= =======  btc   ", btc)
+
+
+                    print( "    btc and usdt    ", btc, "   ", usdt)
                     balance = json.dumps({"BTC": btc, "USDT": usdt})
                     cur.execute("UPDATE users SET balance = %s WHERE userid = %s", (usdt, userid))
                     conn.commit()
@@ -198,9 +216,20 @@ def firsttrading():
             data = request.get_json()
         except Exception as ex:
             print(ex)
+            pass
         print(data)
 
-        sessionToken = data["sessionToken"]
+        sessionToken = ""
+        sessionTokenbool = False
+        try:
+            sessionToken = data["sessionToken"]
+        except Exception as ex:
+            print(ex)
+            sessionTokenbool = True
+            pass
+
+        if sessionTokenbool:
+            return json.dumps({"firsttrading": True}), 200, {"contentType": "application/json"}
 
         print(" ======= sessionToken   ", sessionToken)
 
@@ -229,10 +258,24 @@ def updatebotsetting():
             data = request.get_json()
         except Exception as ex:
             print(ex)
+            pass
         print(data)
 
         inputdata = data["inputdata"]
-        sessionToken = data["sessionToken"]
+        print()
+        print("   inputdata    ", json.dumps(inputdata, indent=4))
+        print()
+        sessionToken = ""
+        sessionTokenbool = False
+        try:
+            sessionToken = data["sessionToken"]
+        except Exception as ex:
+            print(ex)
+            sessionTokenbool = True
+            pass
+
+        if sessionTokenbool:
+            json.dumps({"result": "wrong"}), 200, {"contentType": "application/json"}
 
         print(" ======= sessionToken   ", sessionToken)
 
@@ -254,57 +297,149 @@ def updatebotsetting():
         totalbalance = temp[4]["USDT"]
 
         print(" =======================================================   ", firsttrading, "    ", totalbalance)
+        if not firsttrading:
+            print(" =========== not firsttrading returned   ")
+            return json.dumps({"result": "already"}), 200, {"contentType": "application/json"}
 
-
-        if totalbalance > 5 and firsttrading != False:
+        inputtotal = 0.0
+        for i in range(0, len(inputdata)):
+            if inputdata[i]["active"] == True:
+                inputtotal += float(inputdata[i]["StartingAmount"])
+        print("   total balance  and inputtotal    ", totalbalance, "   ", inputtotal)
+        if inputtotal > float(totalbalance):
+            return json.dumps({"result": "insufficient"}), 200, {"contentType": "application/json"}
+    
+        
+        if float(totalbalance) > 5 and firsttrading == True and float(totalbalance) >= float(inputtotal):
+            print(" ================================   all triggered   ")
             if inputdata[0]["active"] == True:
+                botone["active"] = True
+                if inputdata[0]["UpPyramiding"] == True:
+                    botone["pyramiding"] = True
+                    botone["entrynumpyramiding"] = int(inputdata[0]["pyramidingEntry"])
+                    botone["percentreturnpyramiding"] = float(inputdata[0]["pyramidingGain"])
+                    botone["pyramidingexit"] = 10000000
+                else:
+                    botone["pyramiding"] = False
+                    botone["entrynumpyramiding"] = 0
+                    botone["percentreturnpyramiding"] = 0
+                    botone["pyramidingexit"] = 10000000
+                botone["entrynum"] = int(inputdata[0]["EntryNum"])
+                botone["amount"] = float(inputdata[0]["StartingAmount"])
+                botone["percentrange"] = float(inputdata[0]["PercentRange"])
+                botone["percentreturn"] = float(inputdata[0]["PercentReturn"])
+                botone["pricediff"] = 0
+                botone["currpyramiding"] = False
+                botone["passedpyramidingexit"] = False
+            else:
                 botone["active"] = False
                 if inputdata[0]["UpPyramiding"] == True:
                     botone["pyramiding"] = True
-                    botone["entrynumpyramiding"] = inputdata[0]["pyramidingEntry"]
-                    botone["percentreturnpyramiding"] = inputdata[0]["pyramidingGain"]
+                    botone["entrynumpyramiding"] = int(inputdata[0]["pyramidingEntry"])
+                    botone["percentreturnpyramiding"] = float(inputdata[0]["pyramidingGain"])
                     botone["pyramidingexit"] = 10000000
-                botone["entrynum"] = inputdata[0]["EntryNum"]
-                botone["amount"] = inputdata[0]["StartingAmount"]
-                botone["percentrange"] = inputdata[0]["PercentRange"]
-                botone["percentreturn"] = inputdata[0]["PercentReturn"]
+                else:
+                    botone["pyramiding"] = False
+                    botone["entrynumpyramiding"] = 0
+                    botone["percentreturnpyramiding"] = 0
+                    botone["pyramidingexit"] = 10000000
+                botone["entrynum"] = int(inputdata[0]["EntryNum"])
+                botone["amount"] = float(inputdata[0]["StartingAmount"])
+                botone["percentrange"] = float(inputdata[0]["PercentRange"])
+                botone["percentreturn"] = float(inputdata[0]["PercentReturn"])
                 botone["pricediff"] = 0
                 botone["currpyramiding"] = False
                 botone["passedpyramidingexit"] = False
 
 
             if inputdata[1]["active"] == True:
-                bottwo["active"] = False
+                bottwo["active"] = True
                 if inputdata[1]["UpPyramiding"] == True:
                     bottwo["pyramiding"] = True
-                    bottwo["entrynumpyramiding"] = inputdata[1]["pyramidingEntry"]
-                    bottwo["percentreturnpyramiding"] = inputdata[1]["pyramidingGain"]
+                    bottwo["entrynumpyramiding"] = int(inputdata[1]["pyramidingEntry"])
+                    bottwo["percentreturnpyramiding"] = float(inputdata[1]["pyramidingGain"])
                     bottwo["pyramidingexit"] = 10000000
-                bottwo["entrynum"] = inputdata[1]["EntryNum"]
-                bottwo["amount"] = inputdata[1]["StartingAmount"]
-                bottwo["percentrange"] = inputdata[1]["PercentRange"]
-                bottwo["percentreturn"] = inputdata[1]["PercentReturn"]
+                else:
+                    botone["pyramiding"] = False
+                    botone["entrynumpyramiding"] = 0
+                    botone["percentreturnpyramiding"] = 0
+                    botone["pyramidingexit"] = 10000000
+                bottwo["entrynum"] = int(inputdata[1]["EntryNum"])
+                bottwo["amount"] = float(inputdata[1]["StartingAmount"])
+                bottwo["percentrange"] = float(inputdata[1]["PercentRange"])
+                bottwo["percentreturn"] = float(inputdata[1]["PercentReturn"])
+                bottwo["pricediff"] = 0
+                bottwo["currpyramiding"] = False
+                bottwo["passedpyramidingexit"] = False
+            else:
+                bottwo["active"] = False
+                if inputdata[0]["UpPyramiding"] == True:
+                    bottwo["pyramiding"] = True
+                    bottwo["entrynumpyramiding"] = int(inputdata[0]["pyramidingEntry"])
+                    bottwo["percentreturnpyramiding"] = float(inputdata[0]["pyramidingGain"])
+                    bottwo["pyramidingexit"] = 10000000
+                else:
+                    bottwo["pyramiding"] = False
+                    bottwo["entrynumpyramiding"] = 0
+                    bottwo["percentreturnpyramiding"] = 0
+                    bottwo["pyramidingexit"] = 10000000
+                bottwo["entrynum"] = int(inputdata[0]["EntryNum"])
+                bottwo["amount"] = float(inputdata[0]["StartingAmount"])
+                bottwo["percentrange"] = float(inputdata[0]["PercentRange"])
+                bottwo["percentreturn"] = float(inputdata[0]["PercentReturn"])
                 bottwo["pricediff"] = 0
                 bottwo["currpyramiding"] = False
                 bottwo["passedpyramidingexit"] = False
 
             if inputdata[2]["active"] == True:
-                botthree["active"] = False
+                botthree["active"] = True
                 if inputdata[2]["UpPyramiding"] == True:
                     botthree["pyramiding"] = True
-                    botthree["entrynumpyramiding"] = inputdata[2]["pyramidingEntry"]
-                    botthree["percentreturnpyramiding"] = inputdata[2]["pyramidingGain"]
+                    botthree["entrynumpyramiding"] = int(inputdata[2]["pyramidingEntry"])
+                    botthree["percentreturnpyramiding"] = float(inputdata[2]["pyramidingGain"])
                     botthree["pyramidingexit"] = 10000000
-                botthree["entrynum"] = inputdata[2]["EntryNum"]
-                botthree["amount"] = inputdata[2]["StartingAmount"]
-                botthree["percentrange"] = inputdata[2]["PercentRange"]
-                botthree["percentreturn"] = inputdata[2]["PercentReturn"]
+                else:
+                    botthree["pyramiding"] = False
+                    botthree["entrynumpyramiding"] = int(inputdata[0]["pyramidingEntry"])
+                    botthree["percentreturnpyramiding"] = 0
+                    botthree["pyramidingexit"] = 10000000
+                botthree["entrynum"] = int(inputdata[2]["EntryNum"])
+                botthree["amount"] = float(inputdata[2]["StartingAmount"])
+                botthree["percentrange"] = float(inputdata[2]["PercentRange"])
+                botthree["percentreturn"] = float(inputdata[2]["PercentReturn"])
+                botthree["pricediff"] = 0
+                botthree["currpyramiding"] = False
+                botthree["passedpyramidingexit"] = False
+            else:
+                botthree["active"] = False
+                if inputdata[0]["UpPyramiding"] == True:
+                    botthree["pyramiding"] = True
+                    botthree["entrynumpyramiding"] = int(inputdata[0]["pyramidingEntry"])
+                    botthree["percentreturnpyramiding"] = float(inputdata[0]["pyramidingGain"])
+                    botthree["pyramidingexit"] = 10000000
+                else:
+                    botthree["pyramiding"] = False
+                    botthree["entrynumpyramiding"] = 0
+                    botthree["percentreturnpyramiding"] = 0
+                    botthree["pyramidingexit"] = 10000000
+                botthree["entrynum"] = int(inputdata[0]["EntryNum"])
+                botthree["amount"] = float(inputdata[0]["StartingAmount"])
+                botthree["percentrange"] = float(inputdata[0]["PercentRange"])
+                botthree["percentreturn"] = float(inputdata[0]["PercentReturn"])
                 botthree["pricediff"] = 0
                 botthree["currpyramiding"] = False
                 botthree["passedpyramidingexit"] = False
 
+        print(" =============   update bots userid    ", userid)
+        print(" =============   update bots botone    ", json.dumps(botone, indent=4))
+        print(" =============   update bots bottwo    ", json.dumps(bottwo, indent=4))
+        print(" =============   update bots botthree    ", json.dumps(botthree, indent=4))
+
         tupleval = (json.dumps(botone), json.dumps(bottwo), json.dumps(botthree), userid)
         cur.execute("UPDATE bots SET (botone, bottwo, botthree) = (%s, %s, %s) WHERE userid = %s", tupleval)
+        conn.commit()
+
+        cur.execute("UPDATE users SET botactive = %s WHERE userid = %s", (True, userid))
         conn.commit()
 
         return json.dumps({"result": "success"}), 200, {"contentType": "application/json"}
@@ -319,6 +454,7 @@ def updateapikey():
             data = request.get_json()
         except Exception as ex:
             print(ex)
+            pass
         print(data)
 
         sessionToken = data["sessionToken"]
@@ -340,11 +476,24 @@ def updateapikey():
         except Exception as ex:
             pass
 
+        cur.execute("SELECT apikey, secretkey FROM users", (email,))
+        tempkeys = cur.fetchall()
+        for q in range(0, len(tempkeys)):
+            if apikey == tempkeys[q][0] or secretkey == tempkeys[q][1]:
+                return json.dumps({"result": "wrong"}), 200, {"contentType": "application/json"}
+
+        cur.execute("SELECT firsttrading FROM bots WHERE userid = %s", (userid,))
+        firsttrading = cur.fetchall()[0][0]
+        if not firsttrading:
+            return json.dumps({"result": "already"}), 200, {"contentType": "application/json"}
+
         if btc != None and usdt != None and successbool:
             cur.execute("UPDATE users SET (apikey, secretkey, balance) = (%s, %s, %s) WHERE email = %s", (apikey, secretkey, usdt, email))
             conn.commit()
             inputjson = json.dumps({"BTC": btc, "USDT": usdt})
             cur.execute("UPDATE bots SET totalbalance = %s WHERE userid = %s", (inputjson, userid))
+            conn.commit()
+            cur.execute("UPDATE users SET botactive = %s WHERE userid = %s", (False, userid))
             conn.commit()
             return json.dumps({"result": "success"}), 200, {"contentType": "application/json"}
         if btc == None and usdt == None:
@@ -361,8 +510,32 @@ def transactionhistory():
             data = request.get_json()
         except Exception as ex:
             print(ex)
+            pass
         print(data)
 
+        sessionToken = ""
+        sessionTokenbool = False
+        try:
+            sessionToken = data["sessionToken"]
+        except Exception as ex:
+            print(ex)
+            sessionTokenbool = True
+            pass
+        if sessionTokenbool:
+            templist = []
+            temptemp = {
+					"no": 2,
+					"date": '2021-05-03',
+					"time": '14:00',
+					"coin": 'BTC',
+					"type": 'BTC',
+					"amount": '200',
+					"price": '400$',
+					"worth": 'N/A'
+			}
+            templist.append(temptemp)
+
+            return json.dumps({"data": templist}), 200, {"ContentType": "application/json"}
         sessionToken = data["sessionToken"]
         key = "secret key"
         decoded = jwt.decode(sessionToken, key, algorithms="HS256")

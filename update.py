@@ -20,16 +20,24 @@ class update:
         self.dbcur.execute("SELECT botone, bottwo, botthree FROM bots WHERE userid = %s", (userid,))
         botsettings = self.dbcur.fetchall()[0]
 
+        
+
         maxrange = 0
         for r in range(0, len(botsettings)):
             if botsettings[r]["active"] == True:
                 maxrange = r
 
+
         bottomprice = price
+
         for j in range(0, maxrange):
+
             totalamount = float(botsettings[j]["amount"])
+
             entryamount = totalamount*(1.0/float(botsettings[j]["entrynum"]))
+            
             dollar_difference = float(price)*(float(botsettings[j]["percentrange"])/100.0)*(1.0/float(botsettings[j]["entrynum"]))
+
 
             botsettings[j]["pricediff"] = dollar_difference
 
@@ -40,6 +48,7 @@ class update:
                 else:
                     templist.append({"targetprice": bottomprice, "entryprice": bottomprice, "entryamount": entryamount, "entered": False, "amount": 0})
                 bottomprice -= dollar_difference
+
 
             if j == 0:
                 self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
@@ -70,12 +79,15 @@ class update:
         if botsettings[index]["active"] == False and botsettings[index]["pyramiding"] == False:
             return "False"
 
-        
+        print(" input  ", price, "   ", userid, "   ", index)
+        print()
         bottomprice = price
         totalamount = float(botsettings[index]["amount"])
         entryamount = totalamount*(1.0/float(botsettings[index]["entrynumpyramiding"]))
         totalpercentage = float(botsettings[index]["entrynumpyramiding"])*float(botsettings[index]["percentreturnpyramiding"])
-        dollar_difference = float(price)*(totalpercentage)*(1.0/float(botsettings[index]["entrynumpyramiding"]))
+        dollar_difference = (float(price)*(1.0+(totalpercentage/100.0)) - float(price))/float(botsettings[index]["entrynumpyramiding"])
+
+        print(bottomprice,"  ", totalamount, "  ", entryamount, "  ", totalpercentage,"  ", dollar_difference)
 
         templist = []
         for k in range(0, botsettings[index]["entrynumpyramiding"]):
@@ -86,18 +98,18 @@ class update:
             bottomprice += dollar_difference
 
         if index == 0:
-            self.dbcur.execute("UPDATE botsdata SET botoneinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
+            self.dbcur.execute("UPDATE botsdata SET botoneinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
             self.dbconn.commit()
             self.dbcur.execute("UPDATE bots SET botone = %s WHERE userid = %s", (json.dumps(botsettings[index]), userid))
             self.dbconn.commit()
 
         if index == 1:
-            self.dbcur.execute("UPDATE botsdata SET bottwoinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
+            self.dbcur.execute("UPDATE botsdata SET bottwoinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
             self.dbconn.commit()
             self.dbcur.execute("UPDATE bots SET bottwo = %s WHERE userid = %s", (json.dumps(botsettings[index]), userid))
             self.dbconn.commit()
         if index == 2:
-            self.dbcur.execute("UPDATE botsdata SET botthreeinfo = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
+            self.dbcur.execute("UPDATE botsdata SET botthreeinfopyramiding = %s WHERE userid = %s", (json.dumps({"data": templist}), userid))
             self.dbconn.commit()
             self.dbcur.execute("UPDATE bots SET botthree = %s WHERE userid = %s", (json.dumps(botsettings[index]), userid))
             self.dbconn.commit()

@@ -39,13 +39,16 @@ def realtime_upbit():
             btc = 0
             usdt = 0
             krw = 0
-            for k in range(0, len(balance)):
-                if balance[k]["currency"] == "BTC":
-                    btc = balance[k]["balance"]
-                if balance[k]["currency"] == "USDT":
-                    usdt = balance[k]["balance"]
-                if balance[k]["currency"] == "KRW":
-                    krw = balance[k]["balance"]
+            try:
+                for k in range(0, len(balance)):
+                    if balance[k]["currency"] == "BTC":
+                        btc = balance[k]["balance"]
+                    if balance[k]["currency"] == "USDT":
+                        usdt = balance[k]["balance"]
+                    if balance[k]["currency"] == "KRW":
+                        krw = balance[k]["balance"]
+            except Exception as ex:
+                print(ex)
             
             inputjson = json.dumps({"USDT": usdt, "BTC": btc, "KRW": krw})
             dbcur.execute("UPDATE users SET balance = %s WHERE userid = %s", (usdt, userid))
